@@ -1,5 +1,10 @@
 # Thumb Drive Commander 
 
+[![Linux & OSX Build Status](https://travis-ci.org/xiegeo/thuder.svg?branch=master)](https://travis-ci.org/xiegeo/thuder)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/bunpw2d87nm0vks5?svg=true)](https://ci.appveyor.com/project/xiegeo/thuder)
+
+
+
 Thumb Drive Commander (thuder) is a tool that can (will) push and pull data from a headless device with no internet access. 
 
 ## Usage:
