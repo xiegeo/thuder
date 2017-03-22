@@ -22,6 +22,12 @@ func NewCollection() *Collection {
 	}
 }
 
+func (c *Collection) PrintTo(f func(format string, args ...interface{})) {
+	for k, v := range c.nodes {
+		f("%s: %s\n", k, &v)
+	}
+}
+
 //Add adds all nodes by filename to the collection, existing node with the same
 //name are overwitten.
 func (c *Collection) Add(parent *Node) error {
