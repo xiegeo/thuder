@@ -3,6 +3,8 @@ package thuder
 import (
 	"errors"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 var (
@@ -53,9 +55,42 @@ func (c *Collection) Add(parent *Node) error {
 	return nil
 }
 
-//DirReader can list os.FileInfo, as implemented by os.File
-type DirReader interface {
-	Readdir(n int) ([]os.FileInfo, error)
+//GetAppliedTo returns list of nodes as actions to be taken on the target
+//path such that the operation is consistant.
+//Such as: case-sensitive act as case-perserving.
+//
+//The target dir must have been created
+func (c *Collection) GetAppliedTo(target string) ([]Node, error) {
+	if !filepath.IsAbs(target) {
+		return nil, ErrBadPath
+	}
+	fi, err := os.Stat(target)
+	if err != nil {
+		return nil, err
+	}
+	if !fi.IsDir() {
+		return nil, ErrNeedDir
+	}
+
+	return nil, nil //todo
+}
+
+//pathCompare returns the more "specific" Node by path, to see which should be
+//choosen for conflictes. Only called if the two nodes overwrite each other.
+func pathCompare(a, b *Node) *Node {
+	adl := len(a.fc.from)
+	bdl := len(b.fc.from)
+	if adl > bdl {
+		return a
+	}
+	if adl < bdl {
+		return b
+	}
+	c := strings.Compare(a.FullName(), b.FullName())
+	if c < 0 {
+		return a
+	}
+	return b
 }
 
 type PullJob struct {

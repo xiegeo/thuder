@@ -26,7 +26,10 @@ func TestRootNode(t *testing.T) {
 	cw, _ := filepath.Abs(".")
 	if filepath.Base(cw) == "thuder" {
 		testCases = append(testCases,
-			trn{"package local", cw, nil, []string{"LICENSE"}})
+			trn{"package local", cw, nil, []string{"LICENSE"}},
+			trn{"file not dir", filepath.Join(cw, "LICENSE"), ErrNeedDir, nil})
+	} else {
+		t.Log("warning: package local files not found")
 	}
 
 	var osCases []trn
@@ -42,14 +45,21 @@ func TestRootNode(t *testing.T) {
 
 	testCases = append(testCases, osCases...)
 
+	expErr := func(tc trn, err error) bool {
+		if err == tc.expectedError {
+			return true
+		}
+		if tc.expectedError == os.ErrNotExist && os.IsNotExist(err) {
+			return true
+		}
+		return false
+	}
+
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s with path \"%s\"", tc.testName, tc.dir), func(t *testing.T) {
 			node, err := NewRootNode(tc.dir)
 			if err != nil {
-				if err == tc.expectedError {
-					return
-				}
-				if tc.expectedError == os.ErrNotExist && os.IsNotExist(err) {
+				if expErr(tc, err) {
 					return
 				}
 				t.Fatal(err)
@@ -59,6 +69,9 @@ func TestRootNode(t *testing.T) {
 			c := NewCollection()
 			err = c.Add(node)
 			if err != nil {
+				if expErr(tc, err) {
+					return
+				}
 				t.Fatal(err)
 			}
 			for _, expect := range tc.hasFiles {

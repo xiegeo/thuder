@@ -52,6 +52,11 @@ func (n *Node) String() string {
 	return fmt.Sprintf("File %s %s %.2fkb %v", n.fc, n.info.Name(), float64(n.info.Size())/1024, n.info.ModTime())
 }
 
+//IsDelete returns if the current node should be deleted at the target
+func (n *Node) IsDelete() bool {
+	return n.fc.isDelete
+}
+
 //fileContext contains additional node information
 type FileContext struct {
 	from     string      //source directory
