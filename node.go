@@ -57,6 +57,11 @@ func (n Node) IsDelete() bool {
 	return n.fc.isDelete
 }
 
+//FileMode returns the file mode (ie 0755) used for saving
+func (n Node) FileMode() os.FileMode {
+	return n.fc.perm
+}
+
 //IsDelete returns if it is a directory
 func (n Node) IsDir() bool {
 	return n.info.IsDir()
@@ -72,8 +77,9 @@ type FileContext struct {
 //NewFileContext Creat a new child file context to be used by files with the same dir and perm
 func NewFileContext(parent *Node) *FileContext {
 	return &FileContext{
-		from: parent.FullName(),
-		perm: parent.fc.perm,
+		from:     parent.FullName(),
+		perm:     parent.fc.perm,
+		isDelete: parent.IsDelete(),
 	}
 }
 

@@ -105,17 +105,38 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 //Such as: case-sensitive act as case-perserving.
 //
 //The target dir must have been created
-func (c *Collection) GetAppliedTo(target string) ([]Node, error) {
+func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs []Node, err error) {
 	t, err := NewRootNode(target)
 	if err != nil {
-		return nil, err
-	}
-	if !t.IsDir() {
-		return nil, ErrNeedDir
+		return
 	}
 
 	exist := NewCollection() //Collect nodes from target
-	exist.Add(t)
+	err = exist.Add(t)
+	if err != nil {
+		return
+	}
 
-	return nil, nil //todo
+	for name, nodes := range c.nodes {
+		en := exist.nodes[name]
+		/*
+			en :| file | dir | none
+			c.
+			file| U | R | U
+			del | D | D | X
+			dir | R | A | A
+
+			* del only means delete a file,
+			  delete a dir means files inside dir should be deleted
+
+			U : update -> changedfiles
+			D : delete -> deletes
+			R : replace -> D + U or D + A
+			A : add -> dirs
+			X : no-op
+		*/
+
+	}
+
+	return //todo
 }
