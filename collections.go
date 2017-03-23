@@ -135,7 +135,7 @@ func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles [
 			A : add -> dirs
 			X : no-op
 		*/
-
+		_, _ = nodes, en
 	}
 
 	return //todo
