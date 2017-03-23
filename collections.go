@@ -93,7 +93,7 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 		if len(c.nodes[name]) > 1 {
 			for _, n := range c.nodes[name] {
 				if !n.IsDir() {
-					panic("assertion failed: nodes list must be directories only")
+					panic("assertion failed: []node longer than 1 must be directories only")
 				}
 			}
 		}
