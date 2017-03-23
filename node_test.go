@@ -75,11 +75,11 @@ func TestRootNode(t *testing.T) {
 				t.Fatal(err)
 			}
 			for _, expect := range tc.hasFiles {
-				n, ok := c.nodes[expect]
-				if !ok {
+				nodes := c.Get(expect)
+				if len(nodes) == 0 {
 					t.Error("expected", expect)
 				}
-				t.Logf("found %s", &n)
+				t.Logf("found %s", nodes)
 			}
 			//c.PrintTo(t.Logf)
 			if tc.expectedError != nil {

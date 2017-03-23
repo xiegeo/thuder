@@ -3,7 +3,6 @@ package thuder
 import (
 	"errors"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -15,12 +14,12 @@ var (
 //Collection is a document tree that collects meta data of changes in a directory
 //to be made
 type Collection struct {
-	nodes map[string]Node
+	nodes map[string][]Node
 }
 
 func NewCollection() *Collection {
 	return &Collection{
-		nodes: make(map[string]Node),
+		nodes: make(map[string][]Node),
 	}
 }
 
@@ -30,8 +29,14 @@ func (c *Collection) PrintTo(f func(format string, args ...interface{})) {
 	}
 }
 
-//Add adds all nodes by filename to the collection, existing node with the same
-//name are overwitten.
+//get returns all nodes seen with this name ignoring case
+func (c *Collection) Get(name string) []Node {
+	return c.nodes[strings.ToUpper(name)]
+}
+
+//Add adds all nodes (direct child of given parent) by filename to the collection.
+//Existing files with the same name are overwitten.
+//Existing folders are added.
 func (c *Collection) Add(parent *Node) error {
 	if !parent.info.IsDir() {
 		return ErrNeedDir
@@ -46,13 +51,53 @@ func (c *Collection) Add(parent *Node) error {
 		return err
 	}
 	fc := NewFileContext(parent)
+	c.AddList(fc, list)
+	return nil
+}
+
+//AddList is same as Add, but with give FileContext and FileInfo slice
+func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 	for _, fi := range list {
-		c.nodes[fi.Name()] = Node{
+		name := strings.ToUpper(fi.Name())
+		node := Node{
 			fc:   fc,
 			info: fi,
 		}
+		old := c.nodes[name]
+		if len(old) == 0 {
+			c.nodes[name] = []Node{node}
+		} else if node.IsDir() {
+			if old[0].IsDir() {
+				//add dir to dir list
+				c.nodes[name] = append(old, node)
+			} else {
+				//replace file with new dir list
+				c.nodes[name] = []Node{node}
+			}
+		} else if old[0].IsDir() {
+			//keep dir list, ignore new file
+		} else if old[0].fc.from != node.fc.from { //files (no folders) only starting here
+			//different path, replace
+			c.nodes[name] = []Node{node}
+		} else if node.IsDelete() {
+			//delete duplicate in same path, ignore
+		} else if old[0].IsDelete() {
+			//replace delete
+			c.nodes[name] = []Node{node}
+		} else if strings.Compare(old[0].info.Name(), node.info.Name()) > 0 {
+			//consistently choose one file
+			c.nodes[name] = []Node{node}
+		}
+
+		//assertion
+		if len(c.nodes[name]) > 1 {
+			for _, n := range c.nodes[name] {
+				if !n.IsDir() {
+					panic("assertion failed: nodes list must be directories only")
+				}
+			}
+		}
 	}
-	return nil
 }
 
 //GetAppliedTo returns list of nodes as actions to be taken on the target
@@ -61,69 +106,16 @@ func (c *Collection) Add(parent *Node) error {
 //
 //The target dir must have been created
 func (c *Collection) GetAppliedTo(target string) ([]Node, error) {
-	if !filepath.IsAbs(target) {
-		return nil, ErrBadPath
-	}
-	fi, err := os.Stat(target)
+	t, err := NewRootNode(target)
 	if err != nil {
 		return nil, err
 	}
-	if !fi.IsDir() {
+	if !t.IsDir() {
 		return nil, ErrNeedDir
 	}
 
+	exist := NewCollection() //Collect nodes from target
+	exist.Add(t)
+
 	return nil, nil //todo
 }
-
-//pathCompare returns the more "specific" Node by path, to see which should be
-//choosen for conflictes. Only called if the two nodes overwrite each other.
-func pathCompare(a, b *Node) *Node {
-	adl := len(a.fc.from)
-	bdl := len(b.fc.from)
-	if adl > bdl {
-		return a
-	}
-	if adl < bdl {
-		return b
-	}
-	c := strings.Compare(a.FullName(), b.FullName())
-	if c < 0 {
-		return a
-	}
-	return b
-}
-
-type PullJob struct {
-	Source string //source path
-	Target string //target path
-}
-
-/*
-func (p *PullJob) Do() error {
-
-
-
-	fi, err := os.Stat(dir)
-	if err != nil {
-		return err
-	}
-
-	os.Open(name string)
-
-	c := Collection{}
-	c.Collect()
-
-	return nil
-}
-
-func ChildNodes(dir string, fi os.FileInfo, parent *Node) ([]Node, error) {
-	fi, err := os.Stat(filepath.Join(dir, fi.Name()))
-	if err != nil{
-		return nil, err
-	}
-	retu &Node{
-	fc   *FileContext //allow sharing for node with same context
-	info fi
-	}
-}
-*/

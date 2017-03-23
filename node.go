@@ -35,17 +35,17 @@ func NewRootNode(fullname string) (*Node, error) {
 }
 
 //Open calls os.Open on the file refrenced by this node
-func (n *Node) Open() (*os.File, error) {
+func (n Node) Open() (*os.File, error) {
 	return os.Open(n.FullName())
 }
 
 //FullName returns the absolute path to find the node
-func (n *Node) FullName() string {
+func (n Node) FullName() string {
 	return filepath.Join(n.fc.from, n.info.Name())
 }
 
 //String returns printable node for debugging
-func (n *Node) String() string {
+func (n Node) String() string {
 	if n.info.IsDir() {
 		return fmt.Sprintf("Dir %s %s %v", n.fc, n.info.Name(), n.info.ModTime())
 	}
@@ -53,8 +53,13 @@ func (n *Node) String() string {
 }
 
 //IsDelete returns if the current node should be deleted at the target
-func (n *Node) IsDelete() bool {
+func (n Node) IsDelete() bool {
 	return n.fc.isDelete
+}
+
+//IsDelete returns if it is a directory
+func (n Node) IsDir() bool {
+	return n.info.IsDir()
 }
 
 //fileContext contains additional node information

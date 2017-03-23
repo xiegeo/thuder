@@ -1,0 +1,55 @@
+//useless code snippets
+
+//pathCompare returns the more "specific" Node by path, to see which should be
+//choosen for conflictes. Only called if the two nodes overwrite each other.
+func pathCompare(a, b *Node) *Node {
+	adl := len(a.fc.from)
+	bdl := len(b.fc.from)
+	if adl > bdl {
+		return a
+	}
+	if adl < bdl {
+		return b
+	}
+	c := strings.Compare(a.FullName(), b.FullName())
+	if c < 0 {
+		return a
+	}
+	return b
+}
+
+
+type PullJob struct {
+	Source string //source path
+	Target string //target path
+}
+
+/*
+func (p *PullJob) Do() error {
+
+
+
+	fi, err := os.Stat(dir)
+	if err != nil {
+		return err
+	}
+
+	os.Open(name string)
+
+	c := Collection{}
+	c.Collect()
+
+	return nil
+}
+
+func ChildNodes(dir string, fi os.FileInfo, parent *Node) ([]Node, error) {
+	fi, err := os.Stat(filepath.Join(dir, fi.Name()))
+	if err != nil{
+		return nil, err
+	}
+	retu &Node{
+	fc   *FileContext //allow sharing for node with same context
+	info fi
+	}
+}
+*/
