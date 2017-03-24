@@ -5,7 +5,22 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
+
+// create os.FileInfo for testing
+type testFileInfo struct {
+	name    string
+	dir     bool
+	modtime time.Time
+}
+
+func (s *testFileInfo) Name() string       { return s.name }
+func (s *testFileInfo) Mode() os.FileMode  { return 0755 }
+func (s *testFileInfo) ModTime() time.Time { return s.modtime }
+func (s *testFileInfo) IsDir() bool        { return s.dir }
+func (s *testFileInfo) Sys() interface{}   { return nil }
+func (s *testFileInfo) Size() int64        { return 0 }
 
 type trn struct {
 	testName      string
