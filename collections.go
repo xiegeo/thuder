@@ -64,40 +64,64 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 			info: fi,
 		}
 		old := c.nodes[name]
-		if len(old) == 0 {
+
+		/*
+			conflict resolution matrix
+			old only checks last element in nodes list
+
+			old: | dif folder| same folder      | empty
+							 | file | del | dir |
+			new:
+			file | R | A | R | A | R
+			del  | R | X | X | X | R
+			dir  | A | A | R | A | R
+
+			R : replace with new list
+			A : use addNode function
+			X : no-op
+		*/
+
+		if len(old) == 0 { //empty case
 			c.nodes[name] = []Node{node}
-		} else if node.IsDir() {
-			if old[0].IsDir() {
-				//add dir to dir list
-				c.nodes[name] = append(old, node)
-			} else {
-				//replace file with new dir list
-				c.nodes[name] = []Node{node}
+			continue
+		}
+		index := len(old) - 1
+		last := old[index]
+
+		if node.IsDelete() && !node.IsDir() { //del file case
+			if node.SameDir(last) {
+				continue // no-op
 			}
-		} else if old[0].IsDir() {
-			//keep dir list, ignore new file
-		} else if old[0].fc.from != node.fc.from { //files (no folders) only starting here
-			//different path, replace
 			c.nodes[name] = []Node{node}
-		} else if node.IsDelete() {
-			//delete duplicate in same path, ignore
-		} else if old[0].IsDelete() {
-			//replace delete
-			c.nodes[name] = []Node{node}
-		} else if strings.Compare(old[0].info.Name(), node.info.Name()) > 0 {
-			//consistently choose one file
-			c.nodes[name] = []Node{node}
+			continue
 		}
 
-		//assertion
-		if len(c.nodes[name]) > 1 {
-			for _, n := range c.nodes[name] {
-				if !n.IsDir() {
-					panic("assertion failed: []node longer than 1 must be directories only")
-				}
+		if node.SameDir(last) { //same folder case
+			if last.IsDelete() && !last.IsDir() {
+				c.nodes[name] = []Node{node}
+				continue
 			}
+			c.nodes[name] = addNode(c.nodes[name], node)
+			continue
 		}
+
+		//start dif folder case
+		if node.IsDir() {
+			c.nodes[name] = addNode(c.nodes[name], node)
+			continue
+		}
+		c.nodes[name] = []Node{node}
 	}
+}
+
+//addNode with ordering
+//	ordering: (later is more important, and only the last one is ordered)
+//	- files before dirs
+//	- dirs by insertion order (later added dirs can overwrite earlier once)
+//	- files in same dir ordered by case (so there is one consitant winner)
+//	- new file from different a dir remove existing files
+func addNode(ns []Node, n Node) []Node {
+	return ns //todo
 }
 
 //GetAppliedTo returns list of nodes as actions to be taken on the target
@@ -135,7 +159,7 @@ func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles [
 			A : add -> dirs
 			X : no-op
 		*/
-		_, _ = nodes, en
+		_, _ = nodes, en //todo
 	}
 
 	return //todo

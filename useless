@@ -53,3 +53,38 @@ func ChildNodes(dir string, fi os.FileInfo, parent *Node) ([]Node, error) {
 	}
 }
 */
+
+
+		if len(old) == 0 {
+			c.nodes[name] = []Node{node}
+		} else if node.IsDir() {
+			if old[0].IsDir() {
+				//add dir to dir list
+				c.nodes[name] = append(old, node)
+			} else {
+				//replace file with new dir list
+				c.nodes[name] = []Node{node}
+			}
+		} else if old[0].IsDir() {
+			//keep dir list, ignore new file
+		} else if old[0].fc.from != node.fc.from { //files (no folders) only starting here
+			//different path, replace
+			c.nodes[name] = []Node{node}
+		} else if node.IsDelete() {
+			//delete duplicate in same path, ignore
+		} else if old[0].IsDelete() {
+			//replace delete
+			c.nodes[name] = []Node{node}
+		} else if strings.Compare(old[0].info.Name(), node.info.Name()) > 0 {
+			//consistently choose one file
+			c.nodes[name] = []Node{node}
+		}
+
+		//assertion
+		if len(c.nodes[name]) > 1 {
+			for _, n := range c.nodes[name] {
+				if !n.IsDir() {
+					panic("assertion failed: []node longer than 1 must be directories only")
+				}
+			}
+		}

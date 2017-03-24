@@ -67,6 +67,10 @@ func (n Node) IsDir() bool {
 	return n.info.IsDir()
 }
 
+func (n Node) SameDir(n2 Node) bool {
+	return n.fc.from == n2.fc.from
+}
+
 //fileContext contains additional node information
 type FileContext struct {
 	from     string      //source directory
