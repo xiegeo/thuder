@@ -114,16 +114,6 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 	}
 }
 
-//addNode with ordering
-//	ordering: (later is more important, and only the last one is ordered)
-//	- files before dirs
-//	- dirs by insertion order (later added dirs can overwrite earlier once)
-//	- files in same dir ordered by case (so there is one consitant winner)
-//	- new file from different a dir remove existing files
-func addNode(ns []Node, n Node) []Node {
-	return ns //todo
-}
-
 //GetAppliedTo returns list of nodes as actions to be taken on the target
 //path such that the operation is consistant.
 //Such as: case-sensitive act as case-perserving.

@@ -16,7 +16,7 @@ type testFileInfo struct {
 }
 
 func (s *testFileInfo) Name() string       { return s.name }
-func (s *testFileInfo) Mode() os.FileMode  { return 0755 }
+func (s *testFileInfo) Mode() os.FileMode  { return 0777 }
 func (s *testFileInfo) ModTime() time.Time { return s.modtime }
 func (s *testFileInfo) IsDir() bool        { return s.dir }
 func (s *testFileInfo) Sys() interface{}   { return nil }
@@ -102,5 +102,25 @@ func TestRootNode(t *testing.T) {
 			}
 		})
 	}
+}
+
+//fakeNodes creat fake nodes for testing with a shared FileContext
+func fakeNodes(dir string, names ...string) []Node {
+	ns := make([]Node, 0, len(names))
+	fc := &FileContext{
+		from: dir,
+	}
+	for _, name := range names {
+		ns = append(ns, Node{
+			fc: fc,
+			info: &testFileInfo{
+				name: name,
+			},
+		})
+	}
+	return ns
+}
+
+func TestAddNode(t *testing.T) {
 
 }

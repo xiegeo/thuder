@@ -94,3 +94,13 @@ func (c *FileContext) String() string {
 	}
 	return fmt.Sprintf("0%s (%s)", strconv.FormatUint(uint64(c.perm), 8), c.from)
 }
+
+//addNode with ordering
+//	ordering: (later is more important, and only the last one is ordered)
+//	- files before dirs
+//	- dirs by insertion order (later added dirs can overwrite earlier once)
+//	- files in same dir ordered by case (so there is one consitant winner)
+//	- new file from different a dir remove existing files
+func addNode(ns []Node, n Node) []Node {
+	return ns //todo
+}
