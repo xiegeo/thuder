@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 //Node is a node to be modified in the file system, such as files, folders, and
@@ -97,10 +98,31 @@ func (c *FileContext) String() string {
 
 //addNode with ordering
 //	ordering: (later is more important, and only the last one is ordered)
-//	- files before dirs
-//	- dirs by insertion order (later added dirs can overwrite earlier once)
-//	- files in same dir ordered by case (so there is one consitant winner)
-//	- new file from different a dir remove existing files
+//	1) files before dirs
+//	2) dirs by insertion order (later added files from different dirs can overwrite earlier once)
+//	3) new file from different a dir remove existing files
+//	4) files in same dir ordered by case (so there is one consitant winner)
 func addNode(ns []Node, n Node) []Node {
-	return ns //todo
+	if len(ns) == 0 {
+		return append(ns, n) //base case, only used in tests
+	}
+	if n.IsDir() {
+		return append(ns, n) // 1 and 2
+	}
+
+	index := len(ns) - 1
+	last := ns[index]
+
+	if !last.SameDir(n) {
+		return append(ns[:0], n) // 3
+	}
+
+	// 4
+	c := strings.Compare(last.info.Name(), n.info.Name())
+	if c >= 0 {
+		return append(ns, n)
+	}
+	ns[index] = n
+	return append(ns, last)
+
 }

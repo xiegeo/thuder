@@ -122,5 +122,25 @@ func fakeNodes(dir string, names ...string) []Node {
 }
 
 func TestAddNode(t *testing.T) {
+	dir, _ := filepath.Abs(".")
+	as := []string{"aa", "AA", "aA", "Aa"} //listed out of order
+	ns := fakeNodes(dir, as...)
+	var out []Node
+	last := func() Node {
+		return out[len(out)-1]
+	}
 
+	for _, n := range ns {
+		out = addNode(out, n)
+	}
+
+	if len(out) != len(as) {
+		t.Errorf("not all in the same dir are added (%v/%v)", len(out), len(as))
+	}
+
+	if last().info.Name() != "AA" {
+		t.Errorf("AA should be ordered last, but got %v", last().info.Name())
+	}
+
+	//t.Log(out)
 }
