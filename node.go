@@ -74,15 +74,15 @@ func (n Node) SameDir(n2 Node) bool {
 }
 
 //SameData returns if two files have the same data, panics if either is a dir or
-//marked for deletion. File mode changes are tracked too to propergate mode changes too
+//marked for deletion.
+//Todo: File mode changes are tracked too to propergate when only mode changed?
 func (n Node) SameData(n2 Node) bool {
 	if n.IsDir() || n2.IsDir() || n.IsDelete() || n2.IsDelete() {
 		panic(fmt.Sprintf("SameData can not be used for %v, %v", n, n2))
 	}
 
 	return n.info.Size() == n2.info.Size() &&
-		n.info.ModTime() == n2.info.ModTime() &&
-		n.info.Mode() == n2.info.Mode()
+		n.info.ModTime() == n2.info.ModTime()
 }
 
 //FileContext contains additional node information
@@ -113,8 +113,7 @@ func (c *FileContext) String() string {
 //	ordering: (later is more important, and only the last one is ordered)
 //	1) files before dirs
 //	2) dirs by insertion order (later added files from different dirs can overwrite earlier once)
-//	3) new file from different a dir remove existing files
-//	4) files in same dir ordered by case (so there is one consitant winner)
+//	3) files in same dir ordered by case (so there is one consitant winner)
 func addNode(ns []Node, n Node) []Node {
 	if len(ns) == 0 {
 		return append(ns, n) //base case, only used in tests
@@ -126,11 +125,7 @@ func addNode(ns []Node, n Node) []Node {
 	index := len(ns) - 1
 	last := ns[index]
 
-	if !last.SameDir(n) {
-		return append(ns[:0], n) // 3
-	}
-
-	// 4
+	// 3
 	c := strings.Compare(last.info.Name(), n.info.Name())
 	if c >= 0 {
 		return append(ns, n)

@@ -174,7 +174,13 @@ func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles [
 		}
 
 		if last.IsDir() {
-			dirs = append(dirs, last) //finish cases 7, 8, and 9
+			for i := len(nodes) - 1; i >= 0; i-- {
+				n := nodes[i]
+				if !n.IsDir() {
+					break
+				}
+				dirs = append(dirs, n) //finish cases 7, 8, and 9
+			}
 		} else if !last.IsDelete() && !updated {
 			changedfiles = append(changedfiles, last) //finish cases 1, 2, and 3
 		}
