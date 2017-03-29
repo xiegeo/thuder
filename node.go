@@ -15,7 +15,7 @@ type Node struct {
 	info os.FileInfo  //basic data read from the file system
 }
 
-//NewFileContext Creat a new root node, the fullname must be an absolute path.
+//NewRootNode Creat a new root node, the fullname must be an absolute path.
 func NewRootNode(fullname string) (*Node, error) {
 	if !filepath.IsAbs(fullname) {
 		return nil, ErrBadPath
@@ -63,16 +63,29 @@ func (n Node) FileMode() os.FileMode {
 	return n.fc.perm
 }
 
-//IsDelete returns if it is a directory
+//IsDir returns if it is a directory
 func (n Node) IsDir() bool {
 	return n.info.IsDir()
 }
 
+//SameDir returns if two nodes have the same parent dir path
 func (n Node) SameDir(n2 Node) bool {
 	return n.fc.from == n2.fc.from
 }
 
-//fileContext contains additional node information
+//SameData returns if two files have the same data, panics if either is a dir or
+//marked for deletion. File mode changes are tracked too to propergate mode changes too
+func (n Node) SameData(n2 Node) bool {
+	if n.IsDir() || n2.IsDir() || n.IsDelete() || n2.IsDelete() {
+		panic(fmt.Sprintf("SameData can not be used for %v, %v", n, n2))
+	}
+
+	return n.info.Size() == n2.info.Size() &&
+		n.info.ModTime() == n2.info.ModTime() &&
+		n.info.Mode() == n2.info.Mode()
+}
+
+//FileContext contains additional node information
 type FileContext struct {
 	from     string      //source directory
 	perm     os.FileMode //save as mode perm
