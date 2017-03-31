@@ -24,6 +24,9 @@ func GenerateUniqueHostname() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if len(hn) > 12 {
+		hn = hn[:12]
+	}
 	name.WriteString(hn)
 	ifs, _ := net.Interfaces()
 	for _, v := range ifs {
@@ -39,5 +42,6 @@ func GenerateUniqueHostname() (string, error) {
 		fmt.Fprintf(&name, "_%x", []byte(mac[end-3:end]))
 		break //only use the first one
 	}
+	name.WriteString("_" + getDriveID())
 	return name.String(), nil
 }

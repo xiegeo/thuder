@@ -62,7 +62,7 @@ When pulling files to the removable media, repeated filesnames in other cases ar
 
 #### Others
 
-Other portablity issues, such as special charcters, name length, file size, or anything else that produce an error will be logged and skipped (for pull/backup) or termiate (for push/update). More special case handling can be considered in the future. 
+Other portablity issues, such as special charcters, name length, file size, or anything else that produce an error will be logged and skipped (for pull/backup) or termiate (for push/update). More work arounds can be considered in the future. 
 
 ### Tasks and configeration
 
