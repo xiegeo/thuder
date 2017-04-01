@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenerateUniqueHostname(t *testing.T) {
-	cmd := exec.Command("lsblk", "--nodeps", "-O")
+	cmd := exec.Command("lsblk", "--nodeps", "-o", "name,rm")
 	out, err := cmd.Output()
 	t.Log(string(out), err)
 
