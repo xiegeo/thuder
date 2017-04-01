@@ -9,9 +9,11 @@ import (
 )
 
 func TestGenerateUniqueHostname(t *testing.T) {
-	cmd := exec.Command("lsblk", "--nodeps", "-o", "name,rm")
-	out, err := cmd.Output()
-	t.Log(string(out), err)
+	if runtime.GOOS == "linux" {
+		cmd := exec.Command("lsblk", "--nodeps", "-o", "name,rm")
+		out, err := cmd.Output()
+		t.Log(string(out), err)
+	}
 
 	u, err := GenerateUniqueHostname()
 	if err != nil {
