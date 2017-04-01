@@ -42,6 +42,20 @@ func GenerateUniqueHostname() (string, error) {
 		fmt.Fprintf(&name, "_%x", []byte(mac[end-3:end]))
 		break //only use the first one
 	}
-	name.WriteString("_" + getDriveID())
+	id, err := GetDriveID()
+	if err != nil {
+		//skips drive id
+		fmt.Println(err)
+	} else {
+		name.WriteString("_" + id)
+	}
+
 	return name.String(), nil
+}
+
+//GetDriveID returns the serial number of the local disk. On raspberry pi, it is
+// /sys/block/mmcblk0/device. On windows it is returned by "vol c:".
+//On unsupperted systems, it returns an error.
+func GetDriveID() (string, error) {
+	return getDriveID()
 }

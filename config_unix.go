@@ -10,15 +10,14 @@ import (
 	"strings"
 )
 
-func getDriveID() string {
+func getDriveID() (string, error) {
 	buf := bytes.NewBuffer(nil)
 	cmd := exec.Command("lsblk", "--nodeps", "-o", "name,rm", "-n")
 	cmd.Stdout = buf
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(err)
 		//buf.WriteString("sda      1\nmmcblk0  0\n") //sample data
-		return "lsblk-err"
+		return "", err
 	}
 	var name string
 	for {
@@ -34,23 +33,21 @@ func getDriveID() string {
 		}
 	}
 	if len(name) == 0 {
-		return "no-disk"
+		return "", fmt.Errorf("no acceptable block listed")
 	}
 	serial, err := os.Open("/sys/block/" + name + "/device/serial")
 	if err != nil {
-		fmt.Println(err)
-		return "open-err"
+		return "", err
 	}
 	defer serial.Close()
 
 	b := make([]byte, 12)
 	n, err := serial.Read(b)
 	if err != nil {
-		fmt.Println(err)
-		return "read-err"
+		return "", err
 	}
 	if n > 2 {
-		return string(b[2:n])
+		return string(b[2:n]), nil
 	}
-	return "unknown"
+	return "", fmt.Errorf("read serial \"%s\" too short", b)
 }
