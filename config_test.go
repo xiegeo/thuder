@@ -1,6 +1,8 @@
 package thuder
 
 import (
+	"os"
+	"os/exec"
 	"regexp"
 	"runtime"
 	"strings"
@@ -8,6 +10,10 @@ import (
 )
 
 func TestGenerateUniqueHostname(t *testing.T) {
+	cmd := exec.Command("lsblk", "-O")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+
 	u, err := GenerateUniqueHostname()
 	if err != nil {
 		t.Fatal(err)
