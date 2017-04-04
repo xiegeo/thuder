@@ -8,7 +8,8 @@ import (
 
 // Allows file system calls to be replaced during testing
 
-// File represents a file in the filesystem. (from  spf13/afero/afero.go)
+// File represents a file in the filesystem. (from spf13/afero/afero.go, take
+// just what we need to allow testing holks)
 type File interface {
 	io.ReadWriteCloser
 	//io.ReaderAt
