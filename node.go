@@ -25,7 +25,7 @@ func NewRootNode(fullname string) (*Node, error) {
 		from: dir,
 		perm: os.FileMode(0755),
 	}
-	info, err := os.Stat(fullname)
+	info, err := fs.Stat(fullname)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +36,8 @@ func NewRootNode(fullname string) (*Node, error) {
 }
 
 //Open calls os.Open on the file refrenced by this node
-func (n Node) Open() (*os.File, error) {
-	return os.Open(n.FullName())
+func (n Node) Open() (File, error) {
+	return fs.Open(n.FullName())
 }
 
 //FullName returns the absolute path to find the node
