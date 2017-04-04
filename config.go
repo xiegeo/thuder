@@ -5,16 +5,39 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 )
 
 //HostConfig is configuration data of the host. Autherizaiton is required before
-//a remote media is trusted. Authorization can also modify HostConfig.
+//a removable media is trusted. Authorization can also modify HostConfig.
 type HostConfig struct {
-	UsbLocation    string //ie: /media/usb, E:\ ...
+	MediaLocation  string //ie: /media/usb, E:\ ...
 	UniqueHostName string //ie: hostname-hardward-ids
 	Authorization  func(h *HostConfig) bool
-	Pulls          []string //approved Pull/backup paths on the host device
-	Pushes         []string //approved Push/update paths on the host device
+	AllowPulls     []string //approved Pull/backup paths on the host device
+	AllowPushes    []string //approved Push/update paths on the host device
+}
+
+//UniqueDirectory returns the path to the directory holding data on the
+//removable media for this host
+func (h *HostConfig) UniqueDirectory() string {
+	return filepath.Join(h.MediaLocation, h.UniqueHostName)
+}
+
+//DefaultDirectory returns the path to the directory holding data on the
+//removable media sharing shared data for all hosts
+func (h *HostConfig) DefaultDirectory() string {
+	return filepath.Join(h.MediaLocation, "thuder-default")
+}
+
+//PullTarget return where data should be saved on the removable media
+func (h *HostConfig) PullTarget() string {
+	return filepath.Join(h.UniqueDirectory(), "pull")
+}
+
+//MediaConfig stores configation data for a removable media
+type MediaConfig struct {
+	Pulls []string //paths to Pull/backup from
 }
 
 // GenerateUniqueHostname generates a human readable, unique name for the current host
@@ -54,7 +77,7 @@ func GenerateUniqueHostname() (string, error) {
 }
 
 //GetDriveID returns the serial number of the local disk. On raspberry pi, it is
-// /sys/block/mmcblk0/device. On windows it is returned by "vol c:".
+// /sys/block/mmcblk0/device/serial. On windows it is returned by "vol c:".
 //On unsupperted systems, it returns an error.
 func GetDriveID() (string, error) {
 	return getDriveID()
