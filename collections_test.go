@@ -71,7 +71,7 @@ func TestGetAppliedTo(t *testing.T) {
 		if len(changedfiles) != 1 {
 			t.Fatal(changedfiles)
 		}
-		if len(dirs) != 3 {
+		if len(dirs) != 2 {
 			t.Fatal(dirs)
 		}
 

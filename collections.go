@@ -125,7 +125,7 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 //Such as: case-sensitive act as case-preserving.
 //
 //The target dir must have been created
-func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs []Node, err error) {
+func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs [][]Node, err error) {
 	t, err := NewRootNode(target)
 	if err != nil {
 		return
@@ -174,13 +174,15 @@ func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles [
 		}
 
 		if last.IsDir() {
+			var ds []Node
 			for i := len(nodes) - 1; i >= 0; i-- {
 				n := nodes[i]
 				if !n.IsDir() {
 					break
 				}
-				dirs = append(dirs, n) //finish cases 7, 8, and 9
+				ds = append(ds, n)
 			}
+			dirs = append(dirs, ds) //finish cases 7, 8, and 9
 		} else if !last.IsDelete() && !updated {
 			changedfiles = append(changedfiles, last) //finish cases 1, 2, and 3
 		}
