@@ -7,25 +7,24 @@ import (
 )
 
 // Allows file system calls to be replaced during testing
+var fs = newOsFs()
 
 // File represents a file in the filesystem. (from spf13/afero/afero.go, take
 // just what we need to allow testing holks)
 type File interface {
 	io.ReadWriteCloser
-	//io.ReaderAt
-	//io.Seeker
-	//io.WriterAt
+	io.ReaderAt
+	io.Seeker
+	io.WriterAt
 
-	//Name() string
+	Name() string
 	Readdir(count int) ([]os.FileInfo, error)
-	//Readdirnames(n int) ([]string, error)
+	Readdirnames(n int) ([]string, error)
 	Stat() (os.FileInfo, error)
-	//Sync() error
-	//Truncate(size int64) error
+	Sync() error
+	Truncate(size int64) error
 	WriteString(s string) (ret int, err error)
 }
-
-var fs = newOsFs() //for overide in tests
 
 // Fs is the filesystem interface.
 //
