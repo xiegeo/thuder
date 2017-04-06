@@ -17,7 +17,7 @@ type Node struct {
 
 //NewRootNode Creat a new root node, the fullname must be an absolute path.
 func NewRootNode(fullname string) (*Node, error) {
-	if !filepath.IsAbs(fullname) {
+	if !fs.IsAbs(fullname) {
 		return nil, ErrBadPath
 	}
 	dir, _ := filepath.Split(fullname)

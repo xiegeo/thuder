@@ -3,10 +3,11 @@ package thuder
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 )
 
-// Allows file system calls to be replaced during testing
+// fs Allows file system calls to be replaced during testing
 var fs = newOsFs()
 
 // File represents a file in the filesystem. (from spf13/afero/afero.go, take
@@ -30,6 +31,10 @@ type File interface {
 //
 // Any simulated or real filesystem should implement this interface.
 type Fs interface {
+
+	// IsAbs reports whether the path is absolute.
+	IsAbs(path string) bool
+
 	// Create creates a file in the filesystem, returning the file and an
 	// error, if any happens.
 	Create(name string) (File, error)
@@ -82,6 +87,8 @@ type osFs struct{}
 func newOsFs() Fs {
 	return &osFs{}
 }
+
+func (osFs) IsAbs(path string) bool { return filepath.IsAbs(path) }
 
 func (osFs) Name() string { return "OsFs" }
 

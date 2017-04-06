@@ -28,6 +28,7 @@ type action struct {
 func (p *Processor) Do() {
 	for p.doOnce() {
 	}
+	p.actions <- action{} //empty action means done
 }
 
 // returns true until there is nothing left to do
