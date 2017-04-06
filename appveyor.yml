@@ -8,7 +8,7 @@ build_script:
 
     go env
 
-    go get -v github.com/xiegeo/thuder/...
+    go get -v -u -t github.com/xiegeo/thuder/...
 
     go build github.com/xiegeo/thuder
 test_script:
