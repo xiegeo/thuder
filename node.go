@@ -74,6 +74,7 @@ func (n Node) SameDir(n2 Node) bool {
 	return n.fc.from == n2.fc.from
 }
 
+//ModTime returns the last modified time of the file represented by this node
 func (n Node) ModTime() time.Time {
 	return n.info.ModTime()
 }

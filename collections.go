@@ -2,9 +2,12 @@ package thuder
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 )
+
+var _ = fmt.Println
 
 var (
 	//ErrBadPath is returned when path is not of required formate, such as a absolute
@@ -157,13 +160,16 @@ func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles [
 			U : update -> changedfiles (and deletes other capitalizations)
 			D : delete -> deletes
 			R : replace -> D + U (case 2) or D + A (case 7)
-			A : add -> dirs
+			A : add -> dirs + changedfiles (for new dirs only)
 			X : no-op
 		*/
 		last := nodes[len(nodes)-1]
 		updated := false
 		for _, e := range en {
 			if last.IsDir() && e.IsDir() {
+				if !last.IsDelete() && last.info.Name() == e.info.Name() {
+					updated = true //avoid creating existing dir
+				}
 				continue //case 8
 			}
 
@@ -179,15 +185,17 @@ func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles [
 		}
 
 		if last.IsDir() {
-			var ds []Node
-			for i := len(nodes) - 1; i >= 0; i-- {
+			i := len(nodes) - 1
+			for ; i >= 0; i-- {
 				n := nodes[i]
 				if !n.IsDir() {
 					break
 				}
-				ds = append(ds, n)
 			}
-			dirs = append(dirs, ds) //finish cases 7, 8, and 9
+			dirs = append(dirs, nodes[i+1:]) //cases 7, 8, and 9
+			if !last.IsDelete() && !updated {
+				changedfiles = append(changedfiles, last) //is new dir
+			}
 		} else if !last.IsDelete() && !updated {
 			changedfiles = append(changedfiles, last) //finish cases 1, 2, and 3
 		}

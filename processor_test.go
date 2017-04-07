@@ -79,7 +79,7 @@ func TestProcessor(t *testing.T) {
 		"a", "b",
 		"a/a", "b/b",
 		"a/c", "b/c",
-		"a/D", "b/d",
+		"a/D", "b/d", // d should win
 		"t",
 	}
 	root := "/"
@@ -126,15 +126,19 @@ func TestProcessor(t *testing.T) {
 		if len(a.from) == 0 {
 			break
 		}
-		t.Log(a.from, a.to)
+		//t.Log(a.from, a.to)
 		err := applyAction(a)
 		if err != nil {
 			t.Error(err)
 		}
 	}
-	err := testCopied(root+"b/d/n7", root+"t/D/n7")
+	err := testCopied(root+"a/D/n6", root+"t/d/n6")
 	if err != nil {
 		t.Error("copy expected: ", err)
+	}
+	ex, err := afero.DirExists(mfs, root+"t/D")
+	if ex || err != nil {
+		t.Error("D should be changed to d ", ex, err)
 	}
 	// reset stack and redo
 	p.stack = []layer{layer{from: sources, to: root + "t"}}
@@ -144,12 +148,10 @@ func TestProcessor(t *testing.T) {
 		if len(a.from) == 0 {
 			break
 		}
-		if !a.from[0].IsDir() {
-			t.Error("file operation: ", a.from, " should not be redone.")
-		}
+		t.Error("file operation: ", a.from, " should not be redone.")
 	}
 	afero.Walk(mfs, root, func(path string, info os.FileInfo, err error) error {
-		t.Log(path, info.Name(), info.Size(), info.ModTime())
+		//t.Log(path, info.Name(), info.Size(), info.ModTime())
 		return nil
 	})
 }

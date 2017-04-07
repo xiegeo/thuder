@@ -68,7 +68,7 @@ func TestGetAppliedTo(t *testing.T) {
 		if len(deletes) != 0 {
 			t.Fatal(deletes)
 		}
-		if len(changedfiles) != 1 {
+		if len(changedfiles) != 2 {
 			t.Fatal(changedfiles)
 		}
 		if len(dirs) != 2 {

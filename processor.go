@@ -1,6 +1,7 @@
 package thuder
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,10 +13,30 @@ type Processor struct {
 	actions chan<- action // a buffered channal of queued actions to take
 }
 
+//String returns string debugging
+func (p *Processor) String() string {
+	b := bytes.NewBufferString("{stack:[")
+	for _, l := range p.stack {
+		b.WriteString("\n\t" + l.String())
+	}
+	b.WriteString("]")
+	return b.String()
+}
+
 //layer is a layer in a Processor's stack
 type layer struct {
 	from []Node
 	to   string
+}
+
+//String returns string debugging
+func (l layer) String() string {
+	b := bytes.NewBufferString("{from:[")
+	for _, n := range l.from {
+		b.WriteString(n.String() + " ")
+	}
+	b.WriteString("] to:" + l.to + "}")
+	return b.String()
 }
 
 ///action is an action to be done to the file system
@@ -32,9 +53,6 @@ func applyAction(a action) []error {
 		if err != nil {
 			errs = append(errs, err)
 		}
-		if n.IsDir() {
-			break //only create dir once
-		}
 	}
 	return errs
 }
@@ -42,11 +60,14 @@ func applyAction(a action) []error {
 func applyNode(n Node, to string) error {
 	target := filepath.Join(to, n.info.Name())
 	if n.IsDelete() {
+		//fmt.Println("remove", n.info.Name())
 		return fs.RemoveAll(target)
 	}
 	if n.IsDir() {
+		//fmt.Println("mkdir", n.info.Name())
 		return fs.Mkdir(target, n.FileMode())
 	}
+	//fmt.Println("copy", n.info.Name())
 	return atomicCopy(n, to)
 }
 
@@ -59,6 +80,7 @@ func (p *Processor) Do() {
 
 // returns true until there is nothing left to do
 func (p *Processor) doOnce() bool {
+	//fmt.Println(p)
 	top := len(p.stack) - 1
 	if top < 0 {
 		return false
@@ -89,9 +111,6 @@ func (p *Processor) doOnce() bool {
 	}
 	if len(dirs) > 0 {
 		for _, d := range dirs {
-			a.from = d
-			p.actions <- a //the create dir action
-
 			last := d[len(d)-1]
 
 			newLayer := layer{
