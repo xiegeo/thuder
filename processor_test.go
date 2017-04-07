@@ -113,7 +113,7 @@ func TestProcessor(t *testing.T) {
 		sources = append(sources, *rootNode)
 	}
 
-	actions := make(chan action)
+	actions := make(chan action, 8)
 	p := Processor{
 		stack: []layer{
 			layer{from: sources, to: root + "t"},

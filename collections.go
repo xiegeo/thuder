@@ -128,15 +128,18 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 //
 //The target dir must have been created
 func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs [][]Node, err error) {
-	t, err := NewRootNode(target)
-	if err != nil {
-		return
-	}
-
 	exist := NewCollection() //Collect nodes from target
-	err = exist.Add(t)
-	if err != nil {
-		return
+	t, err := NewRootNode(target)
+	if err == nil {
+		//only add if target exists
+		err = exist.Add(t)
+		if err != nil {
+			return
+		}
+	} else if os.IsNotExist(err) {
+		err = nil // else target is seen as empty, so ignore it
+	} else {
+		return // other unexpected errors
 	}
 
 	for name, nodes := range c.nodes {
