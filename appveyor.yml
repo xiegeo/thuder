@@ -12,4 +12,4 @@ build_script:
 
     go build github.com/xiegeo/thuder
 test_script:
-- cmd: go test -v github.com/xiegeo/thuder
+- cmd: go test -v -race github.com/xiegeo/thuder
