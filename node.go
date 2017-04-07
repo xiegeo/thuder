@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //Node is a node to be modified in the file system, such as files, folders, and
@@ -35,7 +36,7 @@ func NewRootNode(fullname string) (*Node, error) {
 	}, nil
 }
 
-//Open calls os.Open on the file refrenced by this node
+//Open calls os.Open on the file or dir for reading as referenced by this node
 func (n Node) Open() (File, error) {
 	return fs.Open(n.FullName())
 }
@@ -73,6 +74,10 @@ func (n Node) SameDir(n2 Node) bool {
 	return n.fc.from == n2.fc.from
 }
 
+func (n Node) ModTime() time.Time {
+	return n.info.ModTime()
+}
+
 //SameData returns if two files have the same data, panics if either is a dir or
 //marked for deletion.
 //Todo: File mode changes are tracked too to propergate when only mode changed?
@@ -82,7 +87,7 @@ func (n Node) SameData(n2 Node) bool {
 	}
 
 	return n.info.Size() == n2.info.Size() &&
-		n.info.ModTime() == n2.info.ModTime()
+		n.ModTime() == n2.ModTime()
 }
 
 //FileContext contains additional node information

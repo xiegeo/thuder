@@ -24,6 +24,32 @@ type action struct {
 	to   string
 }
 
+func applyAction(a action) []error {
+	var errs []error
+	for i := len(a.from) - 1; i >= 0; i-- {
+		n := a.from[i]
+		err := applyNode(n, a.to)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if n.IsDir() {
+			break //only create dir once
+		}
+	}
+	return errs
+}
+
+func applyNode(n Node, to string) error {
+	target := filepath.Join(to, n.info.Name())
+	if n.IsDelete() {
+		return fs.RemoveAll(target)
+	}
+	if n.IsDir() {
+		return fs.Mkdir(target, n.FileMode())
+	}
+	return atomicCopy(n, to)
+}
+
 //Do make the Processor process the stack until done
 func (p *Processor) Do() {
 	for p.doOnce() {

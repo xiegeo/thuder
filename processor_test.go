@@ -1,9 +1,13 @@
 package thuder
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"testing"
 
@@ -33,6 +37,37 @@ func (w waf) OpenFile(name string, flag int, mode os.FileMode) (File, error) {
 	return w.Fs.OpenFile(name, flag, mode)
 }
 
+func testCopied(a, b string) error {
+	fa, err := fs.Open(a)
+	if err != nil {
+		return err
+	}
+	ia, _ := fa.Stat()
+	fb, err := fs.Open(b)
+	if err != nil {
+		return err
+	}
+	ib, _ := fb.Stat()
+	if ia.IsDir() != ib.IsDir() {
+		return errors.New("not same type")
+	}
+	if ia.Size() != ib.Size() {
+		return errors.New("not same size")
+	}
+	if ia.Mode() != ib.Mode() {
+		return errors.New("not same file mode")
+	}
+	if ia.ModTime() != ib.ModTime() {
+		return errors.New("not same modification time")
+	}
+	da, _ := ioutil.ReadAll(fa)
+	db, _ := ioutil.ReadAll(fb)
+	if !bytes.Equal(da, db) {
+		return errors.New("not same data")
+	}
+	return nil
+}
+
 func TestProcessor(t *testing.T) {
 	fs2 := fs
 	defer func() { fs = fs2 }()
@@ -59,15 +94,15 @@ func TestProcessor(t *testing.T) {
 			t.Fatal(err)
 		}
 		name := fmt.Sprintf("n%v", i)
-		err = afero.WriteFile(mfs, filepath.Join(dir, name), []byte(name), fm)
+		fullName := filepath.Join(dir, name)
+		err = afero.WriteFile(mfs, fullName, []byte(name), fm)
 		if err != nil {
 			t.Fatal(err)
 		}
+		mt := time.Unix(int64(i*10), 0)
+		fs.Chtimes(fullName, mt, mt)
+
 	}
-	afero.Walk(mfs, root, func(path string, info os.FileInfo, err error) error {
-		t.Log(path, info.Name())
-		return nil
-	})
 
 	var sources []Node
 	for _, fullname := range dirs[:2] {
@@ -92,6 +127,29 @@ func TestProcessor(t *testing.T) {
 			break
 		}
 		t.Log(a.from, a.to)
+		err := applyAction(a)
+		if err != nil {
+			t.Error(err)
+		}
 	}
-
+	err := testCopied(root+"b/d/n7", root+"t/D/n7")
+	if err != nil {
+		t.Error("copy expected: ", err)
+	}
+	// reset stack and redo
+	p.stack = []layer{layer{from: sources, to: root + "t"}}
+	go p.Do()
+	for {
+		a := <-actions
+		if len(a.from) == 0 {
+			break
+		}
+		if !a.from[0].IsDir() {
+			t.Error("file operation: ", a.from, " should not be redone.")
+		}
+	}
+	afero.Walk(mfs, root, func(path string, info os.FileInfo, err error) error {
+		t.Log(path, info.Name(), info.Size(), info.ModTime())
+		return nil
+	})
 }

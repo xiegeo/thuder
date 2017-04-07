@@ -124,6 +124,8 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 //path such that the operation is consistent.
 //Such as: case-sensitive act as case-preserving.
 //
+//Returnes are seperated for ordering. ie: deletes happen before copies
+//
 //The target dir must have been created
 func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs [][]Node, err error) {
 	t, err := NewRootNode(target)
