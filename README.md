@@ -26,7 +26,7 @@ I need to remotely service devices with someone on location. The devices should 
 
 Security concerns if a removable media or data on such media is authorized. 
 
-Since typical thumb drives have no build security achecture, such as a trusted computing platform, this makes any addon to authenticate a device less than perfect. This is mitigated by the requirement that any attacker must be phyically present to gain a point of entry. Preventing a worm can only be accomplished by limiting scripting capiblities of thuder or performing good hygiene when reusing thumb drives.
+Since typical thumb drives (and many host devices such as rpi) have no build in security architecture, such as a trusted computing platform, this makes any addon to authenticate a device less than perfect. This is mitigated by the requirement that any attacker must be phyically present to gain a point of entry. Preventing a worm can only be accomplished by limiting scripting capiblities of thuder or performing good hygiene when reusing thumb drives.
 
 Authentication of data is also possible, but limit the environment where data can be modified.
 
@@ -58,7 +58,7 @@ When pushing files to the host, all files with other cases are deleted.
 
 When deleting files, all files ignoring case are deleted.
 
-When pulling files to the removable media, repeated filesnames in other cases are renamed so they are different files to case insensitive systems. 
+When pulling files to the removable media, repeated filesnames in other cases are renamed so they are different files to case insensitive systems. (future)
 
 #### Others
 
