@@ -101,12 +101,11 @@ func TestProcessor(t *testing.T) {
 		}
 		mt := time.Unix(int64(i*10), 0)
 		fs.Chtimes(fullName, mt, mt)
-
 	}
 
 	var sources []Node
 	for _, fullname := range dirs[:2] {
-		rootNode, err := NewRootNode(fullname)
+		rootNode, err := NewRootNode(fullname, false)
 		if err != nil {
 			t.Fatal(fullname, err)
 		}
@@ -150,8 +149,25 @@ func TestProcessor(t *testing.T) {
 		}
 		t.Error("file operation: ", a.from, " should not be redone.")
 	}
+
+	// reset stack and mark a as deletes
+	sources[0].fc.isDelete = true
+	p.stack = []layer{layer{from: sources, to: root + "t"}}
+	go p.Do()
+	for {
+		a := <-actions
+		if len(a.from) == 0 {
+			break
+		}
+		t.Log(a.from, a.to)
+		err := applyAction(a)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
 	afero.Walk(mfs, root, func(path string, info os.FileInfo, err error) error {
-		//t.Log(path, info.Name(), info.Size(), info.ModTime())
+		t.Log(path, info.Name(), info.Size(), info.ModTime())
 		return nil
 	})
 }

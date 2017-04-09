@@ -82,8 +82,8 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 							 | file | del | dir |
 			new:
 			file | R | A | R | A | R
-			del  | R | X | X | X | R
-			dir  | A | A | R | A | R
+			del  | R | X | A | A | R
+			dir  | A | A | A | A | R
 
 			R : replace with new list
 			A : use addNode function
@@ -97,29 +97,21 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 		index := len(old) - 1
 		last := old[index]
 
-		if node.IsDelete() && !node.IsDir() { //del file case
-			if node.SameDir(last) {
-				continue // no-op
-			}
+		if !node.IsDir() && !node.SameDir(last) {
 			c.nodes[name] = []Node{node}
 			continue
 		}
-
-		if node.SameDir(last) { //same folder case
-			if last.IsDelete() && !last.IsDir() {
+		if !node.IsDir() && !last.IsDir() && node.SameDir(last) {
+			if node.IsDelete() && !last.IsDelete() {
+				continue //no-op
+			}
+			if !node.IsDelete() && last.IsDelete() {
 				c.nodes[name] = []Node{node}
 				continue
 			}
-			c.nodes[name] = addNode(c.nodes[name], node)
-			continue
 		}
 
-		//start dif folder case
-		if node.IsDir() {
-			c.nodes[name] = addNode(c.nodes[name], node)
-			continue
-		}
-		c.nodes[name] = []Node{node}
+		c.nodes[name] = addNode(c.nodes[name], node)
 	}
 }
 
@@ -127,22 +119,21 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 //path such that the operation is consistent.
 //Such as: case-sensitive act as case-preserving.
 //
-//Returnes are seperated for ordering. ie: deletes happen before copies
+//Returnes are separated for ordering. ie: deletes happen before copies
 //
 //The target dir must have been created
 func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs [][]Node, err error) {
 	exist := NewCollection() //Collect nodes from target
-	t, err := NewRootNode(target)
-	if err == nil {
-		//only add if target exists
+	t, err := NewRootNode(target, true)
+	if err == nil { //only add if target can be opend
 		err = exist.Add(t)
 		if err != nil {
 			return
 		}
 	} else if os.IsNotExist(err) {
-		err = nil // else target is seen as empty, so ignore it
+		err = nil // target is not created yet, so just treat it as empty
 	} else {
-		return // other unexpected errors
+		return // returns other unexpected errors
 	}
 
 	for name, nodes := range c.nodes {

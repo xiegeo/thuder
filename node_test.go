@@ -72,7 +72,7 @@ func TestRootNode(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s with path \"%s\"", tc.testName, tc.dir), func(t *testing.T) {
-			node, err := NewRootNode(tc.dir)
+			node, err := NewRootNode(tc.dir, false)
 			if err != nil {
 				if expErr(tc, err) {
 					return

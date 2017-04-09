@@ -9,7 +9,7 @@ import (
 
 func TestGetAppliedTo(t *testing.T) {
 	cw, _ := filepath.Abs(".")
-	rootN, err := NewRootNode(cw)
+	rootN, err := NewRootNode(cw, false)
 	if err != nil {
 		t.Fatal(err)
 	}

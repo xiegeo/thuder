@@ -17,14 +17,16 @@ type Node struct {
 }
 
 //NewRootNode Creat a new root node, the fullname must be an absolute path.
-func NewRootNode(fullname string) (*Node, error) {
+//isDelete sets the isDelete property.
+func NewRootNode(fullname string, isDelete bool) (*Node, error) {
 	if !fs.IsAbs(fullname) {
 		return nil, ErrBadPath
 	}
 	dir, _ := filepath.Split(fullname)
 	fc := &FileContext{
-		from: dir,
-		perm: os.FileMode(0755),
+		from:     dir,
+		perm:     os.FileMode(0755),
+		isDelete: isDelete,
 	}
 	info, err := fs.Stat(fullname)
 	if err != nil {
@@ -79,11 +81,11 @@ func (n Node) ModTime() time.Time {
 	return n.info.ModTime()
 }
 
-//SameData returns if two files have the same data, panics if either is a dir or
-//marked for deletion.
+//SameData returns if two files have the same data based on size and modtime,
+// panics if either is a dir
 //Todo: File mode changes are tracked too to propergate when only mode changed?
 func (n Node) SameData(n2 Node) bool {
-	if n.IsDir() || n2.IsDir() || n.IsDelete() || n2.IsDelete() {
+	if n.IsDir() || n2.IsDir() {
 		panic(fmt.Sprintf("SameData can not be used for %v, %v", n, n2))
 	}
 
