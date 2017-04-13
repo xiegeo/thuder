@@ -90,7 +90,35 @@ func (n Node) SameData(n2 Node) bool {
 	}
 
 	return n.info.Size() == n2.info.Size() &&
-		n.ModTime() == n2.ModTime()
+		EqualFileModTime(n.ModTime(), n2.ModTime())
+}
+
+//EqualFileModTime test if two file last mod times from different file system
+//are equal.
+//
+//supports:
+//  FAT: 2 sec, ceiling
+//	others: 1 sec, ceiling
+//	and any subsec: if diff less than 0.5 sec
+func EqualFileModTime(t1, t2 time.Time) bool {
+	if t1.Equal(t2) {
+		return true
+	}
+	if t1.After(t2) {
+		t1, t2 = t2, t1 //make t1 the smaller time
+	}
+	if !t1.Add(2 * time.Second).After(t2) { //t1 + 2s <= t2
+		// 2 sec or more diff, they are different
+		return false
+	}
+	if t2.Nanosecond() == 0 {
+		// the greater time have no sub sec precision
+		if t2.Second()%2 == 0 {
+			return true
+		}
+		return t1.Add(time.Second).After(t2) // t1 + 1s > t2
+	}
+	return t1.Add(time.Second / 2).After(t2) // t1 + .5s > t2
 }
 
 //FileContext contains additional node information

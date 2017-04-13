@@ -144,3 +144,38 @@ func TestAddNode(t *testing.T) {
 
 	//t.Log(out)
 }
+
+func TestEqualFileModTime(t *testing.T) {
+	testCases := []struct {
+		a, b float32
+		same bool
+	}{
+		{1, 1, true},
+		{1, 1.125, true},
+		{1, 1.725, false},
+		{1, 1.875, false},
+		{1, 2, true},
+		{2, 3, false},
+		{0, 2, false},
+		{0.0001, 2, true},
+		{0.0001, 1.5, false},
+		{0.0001, 1, true},
+		{0, 10, false},
+	}
+	toTime := func(s float32) time.Time {
+		return time.Unix(0, 0).Add(time.Duration(s * float32(time.Second)))
+	}
+	for i, tc := range testCases {
+		a := toTime(tc.a)
+		b := toTime(tc.b)
+		if EqualFileModTime(a, b) != tc.same {
+			t.Errorf("EqualFileModTime (%v) for %v and %v expeced %v, but got %v",
+				i, a, b, tc.same, EqualFileModTime(a, b))
+		}
+		if EqualFileModTime(b, a) != tc.same {
+			t.Errorf("EqualFileModTime (%v') for %v and %v expeced %v, but got %v",
+				i, b, a, tc.same, EqualFileModTime(b, a))
+		}
+	}
+
+}
