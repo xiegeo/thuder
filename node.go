@@ -83,7 +83,7 @@ func (n Node) ModTime() time.Time {
 
 //SameData returns if two files have the same data based on size and modtime,
 // panics if either is a dir
-//Todo: File mode changes are tracked too to propergate when only mode changed?
+//Todo: File mode changes are tracked to propergate mode changes too?
 func (n Node) SameData(n2 Node) bool {
 	if n.IsDir() || n2.IsDir() {
 		panic(fmt.Sprintf("SameData can not be used for %v, %v", n, n2))
