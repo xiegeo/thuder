@@ -169,11 +169,11 @@ func TestEqualFileModTime(t *testing.T) {
 		a := toTime(tc.a)
 		b := toTime(tc.b)
 		if EqualFileModTime(a, b) != tc.same {
-			t.Errorf("EqualFileModTime (%v) for %v and %v expeced %v, but got %v",
+			t.Errorf("EqualFileModTime (%v) for %v and %v expected %v, but got %v",
 				i, a, b, tc.same, EqualFileModTime(a, b))
 		}
 		if EqualFileModTime(b, a) != tc.same {
-			t.Errorf("EqualFileModTime (%v') for %v and %v expeced %v, but got %v",
+			t.Errorf("EqualFileModTime (%v') for %v and %v expected %v, but got %v",
 				i, b, a, tc.same, EqualFileModTime(b, a))
 		}
 	}

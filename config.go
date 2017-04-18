@@ -2,10 +2,21 @@ package thuder
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
+
+	"github.com/bmatcuk/doublestar"
+)
+
+var (
+	//ErrNeedAuthorizationFunction : the action required Authorization to be set
+	ErrNeedAuthorizationFunction = errors.New("authorization function required")
+	//ErrFailedAuthorization : authorization function returned false
+	ErrFailedAuthorization = errors.New("authorization function returned false")
 )
 
 //HostConfig is configuration data of the host. Autherizaiton is required before
@@ -16,6 +27,7 @@ type HostConfig struct {
 	Authorization  func(h *HostConfig) bool
 	AllowPulls     []string //approved Pull/backup paths on the host device
 	AllowPushes    []string //approved Push/update paths on the host device
+	Group          string   //used to select different default configeration files on the removable media
 }
 
 //UniqueDirectory returns the path to the directory holding data on the
@@ -35,9 +47,102 @@ func (h *HostConfig) PullTarget() string {
 	return filepath.Join(h.UniqueDirectory(), "pull")
 }
 
+//MediaConfig runs the Authorization delegate and loads MediaConfig from
+func (h *HostConfig) MediaConfig() (*MediaConfig, error) {
+	if !filepath.IsAbs(h.MediaLocation) {
+		return nil, ErrBadPath
+	}
+	fi, err := fs.Stat(h.MediaLocation)
+	if err != nil {
+		return nil, err
+	}
+	if !fi.IsDir() {
+		return nil, ErrNeedDir
+	}
+
+	fn := h.Group + ".MediaConfig.json"
+	if h.Authorization == nil {
+		return nil, ErrNeedAuthorizationFunction
+	}
+	if !h.Authorization(h) {
+		return nil, ErrFailedAuthorization
+	}
+
+	if len(h.UniqueHostName) == 0 {
+		h.UniqueHostName, err = GenerateUniqueHostname()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	mc, err := LoadMediaConfig(filepath.Join(h.UniqueDirectory(), fn))
+	if err != nil && os.IsNotExist(err) {
+		mc, err = LoadMediaConfig(filepath.Join(h.DefaultDirectory(), fn))
+	}
+	if err != nil {
+		return nil, err
+	}
+	var errs, errs2 []error
+	mc.Pulls, errs = filterPathes(mc.Pulls, h.AllowPulls)
+	mc.Pushes, errs2 = filterPathes(mc.Pushes, h.AllowPushes)
+	if len(errs) != 0 || len(errs2) != 0 {
+		b := bytes.NewBuffer(nil)
+		for _, e := range append(errs, errs2...) {
+			fmt.Fprintln(b, e)
+		}
+		return mc, errors.New(b.String())
+	}
+	return mc, nil
+}
+
+//filterPathes returns any path allowed, and any allows partterns with ErrBadPattern as error
+func filterPathes(pathes, allows []string) ([]string, []error) {
+	var out []string
+	errmap := make(map[int]error)
+	var errs []error
+	for _, path := range pathes {
+		for i, allow := range allows {
+			if errmap[i] != nil {
+				continue
+			}
+			m, err := doublestar.PathMatch(allow, path)
+			if err != nil {
+				if err == doublestar.ErrBadPattern {
+					err = errors.New(allow)
+					errmap[i] = err
+				}
+				errs = append(errs, err)
+				continue
+			}
+			if m {
+				out = append(out, path)
+				break
+			}
+		}
+	}
+	return out, errs
+}
+
 //MediaConfig stores configation data for a removable media
 type MediaConfig struct {
-	Pulls []string //paths to Pull/backup from
+	Pulls  []string //paths to Pull/backup from
+	Pushes []string //paths to Push/update to the host device
+}
+
+//LoadMediaConfig loads MediaConfig from path
+func LoadMediaConfig(path string) (*MediaConfig, error) {
+	f, err := fs.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	dec := json.NewDecoder(f)
+	mc := &MediaConfig{}
+	err = dec.Decode(mc)
+	if err != nil {
+		return nil, err
+	}
+	return mc, nil
 }
 
 // GenerateUniqueHostname generates a human readable, unique name for the current host

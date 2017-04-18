@@ -159,7 +159,7 @@ func TestProcessor(t *testing.T) {
 		if len(a.from) == 0 {
 			break
 		}
-		t.Log(a.from, a.to)
+		//t.Log(a.from, a.to)
 		err := applyAction(a)
 		if err != nil {
 			t.Error(err)
@@ -167,7 +167,7 @@ func TestProcessor(t *testing.T) {
 	}
 
 	afero.Walk(mfs, root, func(path string, info os.FileInfo, err error) error {
-		t.Log(path, info.Name(), info.Size(), info.ModTime())
+		//t.Log(path, info.Name(), info.Size(), info.ModTime())
 		return nil
 	})
 }

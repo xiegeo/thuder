@@ -31,3 +31,34 @@ func TestGenerateUniqueHostname(t *testing.T) {
 	t.Log(macpart)
 	t.Log(u)
 }
+
+func TestFilterPathes(t *testing.T) {
+	allows := []string{
+		"a/**",
+		"b/b/**",
+	}
+	tries := []string{
+		"a/", "a/ok",
+		"b/", "b/no", "b/b/ok/2",
+		"c",
+	}
+	expect := []string{
+		"a/", "a/ok",
+		"b/b/ok/2",
+	}
+
+	out, errs := filterPathes(tries, allows)
+	if len(errs) != 0 {
+		t.Error(errs)
+	}
+
+	if len(expect) != len(out) {
+		t.Fatalf("expected %v, but got %v", expect, out)
+	}
+
+	for i, exp := range expect {
+		if out[i] != exp {
+			t.Fatalf("expected %v, but got %v", expect, out)
+		}
+	}
+}
