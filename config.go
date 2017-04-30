@@ -22,12 +22,12 @@ var (
 //HostConfig is configuration data of the host. Autherizaiton is required before
 //a removable media is trusted. Authorization can also modify HostConfig.
 type HostConfig struct {
-	MediaLocation  string //ie: /media/usb, E:\ ...
-	UniqueHostName string //ie: hostname-hardward-ids
-	Authorization  func(h *HostConfig) bool
-	AllowPulls     []string //approved Pull/backup paths on the host device
-	AllowPushes    []string //approved Push/update paths on the host device
-	Group          string   //used to select different default configeration files on the removable media
+	MediaLocation  string                   //ie: /media/usb, E:\ ...
+	UniqueHostName string                   //ie: hostname-hardward-ids
+	Authorization  func(h *HostConfig) bool `json:"-"`
+	AllowPulls     []string                 //approved Pull/backup paths on the host device
+	AllowPushes    []string                 //approved Push/update paths on the host device
+	Group          string                   //used to select different default configeration files on the removable media
 }
 
 //UniqueDirectory returns the path to the directory holding data on the
