@@ -34,16 +34,16 @@ func TestGenerateUniqueHostname(t *testing.T) {
 
 func TestFilterPathes(t *testing.T) {
 	allows := []string{
-		"a/**",
+		"a", "a/**",
 		"b/b/**",
 	}
 	tries := []string{
-		"a/", "a/ok",
+		"a", "a/ok",
 		"b/", "b/no", "b/b/ok/2",
 		"c",
 	}
 	expect := []string{
-		"a/", "a/ok",
+		"a", "a/ok",
 		"b/b/ok/2",
 	}
 
