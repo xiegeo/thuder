@@ -45,7 +45,7 @@ func main() {
 }
 
 func saveFile(fn string, v interface{}) error {
-	data, err := json.MarshalIndent(v, "\n", "\t")
+	data, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
 		return err
 	}
