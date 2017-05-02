@@ -94,13 +94,18 @@ func mediaLocation() string {
 	return "E:\\" //windows
 }
 
+var pswd = ""
+
 //authorize your removable device. You must customize this function
 func authorize(hc *thuder.HostConfig) bool {
+	if pswd == "" {
+		panic("please define pswd in a new pswd.go file," +
+			" or rewite authorize to use a different method")
+	}
 	p, err := ioutil.ReadFile(filepath.Join(hc.DefaultDirectory(), "pswd"))
 	if err != nil {
 		logE.Println(err)
 		return false
 	}
-	return (string)(p) == pswd //please define pswd in a new pswd.go file,
-	// or rewite authorize to use a different method
+	return (string)(p) == pswd
 }
