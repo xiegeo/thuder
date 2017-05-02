@@ -3,14 +3,72 @@ package thuder
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
+
+//PullAndPush does push and pulls based on given configurations, it uses Processors
+func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
+	if debug == nil {
+		debug = ioutil.Discard
+	}
+
+	actions := make(chan action, 8)
+	apply := func(p *Processor) {
+		go p.Do()
+		for {
+			a := <-actions
+			if len(a.from) == 0 {
+				return
+			}
+			err := applyAction(a)
+			if err != nil {
+				fmt.Fprintln(debug, err)
+			}
+		}
+	}
+
+	p, err := NewProcessor(mc.Pulls, hc.PullTarget(), actions)
+	if err != nil {
+		return err
+	}
+	apply(p)
+
+	/*
+		p, err = NewProcessor(mc.Pushes, "/", actions)
+		if err != nil {
+			return err
+		}
+		apply(p)
+	*/
+	return nil
+}
 
 //Processor does the recursive, depth first, processing of directories
 type Processor struct {
 	stack   []layer
 	actions chan<- action // a buffered channal of queued actions to take
+}
+
+//NewProcessor create a new Processor
+func NewProcessor(dirs []string, to string, actions chan<- action) (*Processor, error) {
+	var sources []Node
+	for _, fullname := range dirs[:2] {
+		rootNode, err := NewRootNode(fullname, false)
+		if err != nil {
+			return nil, err
+		}
+		sources = append(sources, *rootNode)
+	}
+	p := Processor{
+		stack: []layer{
+			layer{from: sources, to: to},
+		},
+		actions: actions,
+	}
+	return &p, nil
 }
 
 //String returns string debugging

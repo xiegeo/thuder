@@ -103,22 +103,12 @@ func TestProcessor(t *testing.T) {
 		fs.Chtimes(fullName, mt, mt)
 	}
 
-	var sources []Node
-	for _, fullname := range dirs[:2] {
-		rootNode, err := NewRootNode(fullname, false)
-		if err != nil {
-			t.Fatal(fullname, err)
-		}
-		sources = append(sources, *rootNode)
-	}
-
 	actions := make(chan action, 8)
-	p := Processor{
-		stack: []layer{
-			layer{from: sources, to: root + "t"},
-		},
-		actions: actions,
+	p, err := NewProcessor(dirs[:2], root+"t", actions)
+	if err != nil {
+		t.Fatal(err)
 	}
+	startingLayer := p.stack[0]
 	go p.Do()
 	for {
 		a := <-actions
@@ -131,7 +121,7 @@ func TestProcessor(t *testing.T) {
 			t.Error(err)
 		}
 	}
-	err := testCopied(root+"a/D/n6", root+"t/d/n6")
+	err = testCopied(root+"a/D/n6", root+"t/d/n6")
 	if err != nil {
 		t.Error("copy expected: ", err)
 	}
@@ -140,7 +130,7 @@ func TestProcessor(t *testing.T) {
 		t.Error("D should be changed to d ", ex, err)
 	}
 	// reset stack and redo
-	p.stack = []layer{layer{from: sources, to: root + "t"}}
+	p.stack = []layer{startingLayer}
 	go p.Do()
 	for {
 		a := <-actions
@@ -151,8 +141,8 @@ func TestProcessor(t *testing.T) {
 	}
 
 	// reset stack and mark a as deletes
-	sources[0].fc.isDelete = true
-	p.stack = []layer{layer{from: sources, to: root + "t"}}
+	startingLayer.from[0].fc.isDelete = true
+	p.stack = []layer{startingLayer}
 	go p.Do()
 	for {
 		a := <-actions
