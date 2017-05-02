@@ -6,6 +6,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	logLab "log"
 	"os"
@@ -38,10 +39,19 @@ func main() {
 			panic(err)
 		}
 	} else {
-
+		dec := json.NewDecoder(file)
+		err = dec.Decode(hc)
+		if err != nil {
+			panic(err)
+		}
 	}
-	//todo load HostConfig config file
-	_, _ = hc, file
+	hc.Authorization = authorize
+	mc, err := hc.MediaConfig()
+	if err != nil {
+		logE.Println("Can not load Media Config", err)
+		return
+	}
+	fmt.Println(mc)
 }
 
 func saveFile(fn string, v interface{}) error {
@@ -82,4 +92,15 @@ func mediaLocation() string {
 		return "/media/usb" //by usbmount
 	}
 	return "E:\\" //windows
+}
+
+//authorize your removable device. You must customize this function
+func authorize(hc *thuder.HostConfig) bool {
+	p, err := ioutil.ReadFile(filepath.Join(hc.DefaultDirectory(), "pswd"))
+	if err != nil {
+		logE.Println(err)
+		return false
+	}
+	return (string)(p) == pswd //please define pswd in a new pswd.go file,
+	// or rewite authorize to use a different method
 }
