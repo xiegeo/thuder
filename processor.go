@@ -55,7 +55,7 @@ type Processor struct {
 //NewProcessor create a new Processor
 func NewProcessor(dirs []string, to string, actions chan<- action) (*Processor, error) {
 	var sources []Node
-	for _, fullname := range dirs[:2] {
+	for _, fullname := range dirs {
 		rootNode, err := NewRootNode(fullname, false)
 		if err != nil {
 			return nil, err
