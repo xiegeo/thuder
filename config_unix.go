@@ -46,8 +46,9 @@ func getDriveID() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	b = bytes.TrimSpace(b[:n])
 	if n > 2 {
-		return string(b[2:n]), nil
+		return string(b[2:]), nil
 	}
 	return "", fmt.Errorf("read serial \"%s\" too short", b)
 }
