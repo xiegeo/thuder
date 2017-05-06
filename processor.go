@@ -23,6 +23,7 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
 			if len(a.from) == 0 {
 				return
 			}
+			LogP("Appling %v actions to %v.\n", len(a.from), a.to)
 			err := applyAction(a)
 			if err != nil {
 				fmt.Fprintln(debug, err)
@@ -30,7 +31,7 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
 		}
 	}
 
-	p, err := NewProcessor(mc.Pulls, hc.PullTarget(), actions)
+	p, err := NewPullingProcessor(mc.Pulls, hc.PullTarget(), actions)
 	if err != nil {
 		return err
 	}
@@ -52,8 +53,48 @@ type Processor struct {
 	actions chan<- action // a buffered channal of queued actions to take
 }
 
+//joinSub is filePath.Join with additional special charcter handling
+func joinSub(parent, sub string) string {
+	if filepath.Separator == '\\' && len(sub) > 1 && sub[1] == ':' {
+		if len(sub) > 2 {
+			sub = sub[0:1] + sub[2:]
+		} else {
+			sub = sub[0:1]
+		}
+	}
+	return filepath.Join(parent, sub)
+}
+
+//LogP is the handler for logging live progress, in the form of fmt.Printf
+var LogP = func(format string, a ...interface{}) {
+	fmt.Printf(format, a...)
+}
+
+//NewPullingProcessor create a new Processor for pulling dirs from host to media.
+func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action) (*Processor, error) {
+	var stack []layer
+	for _, fullname := range dirs {
+		rootNode, err := NewRootNode(fullname, false)
+		if err != nil {
+			return nil, err
+		}
+		to := joinSub(pullTo, fullname)
+		LogP("Pulls dir %v to %v.\n", fullname, to)
+		err = fs.MkdirAll(to, 0755)
+		if err != nil {
+			return nil, err
+		}
+		stack = append(stack, layer{from: []Node{*rootNode}, to: to})
+	}
+	p := Processor{
+		stack:   stack,
+		actions: actions,
+	}
+	return &p, nil
+}
+
 //NewProcessor create a new Processor
-func NewProcessor(dirs []string, to string, actions chan<- action) (*Processor, error) {
+func newProcessor(dirs []string, to string, actions chan<- action) (*Processor, error) {
 	var sources []Node
 	for _, fullname := range dirs {
 		rootNode, err := NewRootNode(fullname, false)

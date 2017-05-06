@@ -52,6 +52,11 @@ func main() {
 		return
 	}
 	fmt.Println(mc)
+	err = thuder.PullAndPush(hc, mc, os.Stderr)
+	if err != nil {
+		logE.Println("Failed ", err)
+		return
+	}
 }
 
 func saveFile(fn string, v interface{}) error {
