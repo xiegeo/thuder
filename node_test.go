@@ -152,14 +152,16 @@ func TestEqualFileModTime(t *testing.T) {
 	}{
 		{1, 1, true},
 		{1, 1.125, true},
-		{1, 1.725, false},
-		{1, 1.875, false},
+		{1, 1.725, true},
+		{1, 1.875, true},
 		{1, 2, true},
-		{2, 3, false},
+		{2, 3, true},
 		{0, 2, false},
 		{0.0001, 2, true},
 		{0.0001, 1.5, false},
 		{0.0001, 1, true},
+		{0.0001, 0.6, false},
+		{0.0001, 0.5, true},
 		{0, 10, false},
 	}
 	toTime := func(s float32) time.Time {

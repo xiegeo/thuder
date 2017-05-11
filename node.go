@@ -97,8 +97,8 @@ func (n Node) SameData(n2 Node) bool {
 //are equal.
 //
 //supports:
-//  FAT: 2 sec, ceiling
-//	others: 1 sec, ceiling
+//  FAT: 2 sec, (ceiling for windows, floor for linux)
+//	others: 1 sec
 //	and any subsec: if diff less than 0.5 sec
 func EqualFileModTime(t1, t2 time.Time) bool {
 	if t1.Equal(t2) {
@@ -111,9 +111,9 @@ func EqualFileModTime(t1, t2 time.Time) bool {
 		// 2 sec or more diff, they are different
 		return false
 	}
-	if t2.Nanosecond() == 0 {
-		// the greater time have no sub sec precision
-		if t2.Second()%2 == 0 {
+	if t1.Nanosecond() == 0 || t2.Nanosecond() == 0 {
+		// one time have no sub sec precision
+		if t1.Second()%2 == 0 || t2.Second()%2 == 0 {
 			return true
 		}
 		return t1.Add(time.Second).After(t2) // t1 + 1s > t2
