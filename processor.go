@@ -44,6 +44,9 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
 		}
 		apply(p)
 	*/
+
+	syncWriteCache()
+
 	return nil
 }
 
