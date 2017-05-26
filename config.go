@@ -47,6 +47,18 @@ func (h *HostConfig) PullTarget() string {
 	return filepath.Join(h.UniqueDirectory(), "pull")
 }
 
+//PushSources return the dirs to push from, and if it is a isDelete
+func (h *HostConfig) PushSources() ([]string, []bool) {
+	return []string{
+			filepath.Join(h.DefaultDirectory(), h.Group, "push"),
+			filepath.Join(h.DefaultDirectory(), h.Group, "delete"),
+			filepath.Join(h.UniqueDirectory(), "push"),
+			filepath.Join(h.UniqueDirectory(), "delete"),
+		}, []bool{
+			false, true, false, true,
+		}
+}
+
 //MediaConfig runs the Authorization delegate and loads MediaConfig from
 func (h *HostConfig) MediaConfig() (*MediaConfig, error) {
 	if !filepath.IsAbs(h.MediaLocation) {
@@ -93,6 +105,26 @@ func (h *HostConfig) MediaConfig() (*MediaConfig, error) {
 		return mc, errors.New(b.String())
 	}
 	return mc, nil
+}
+
+func (h *HostConfig) PushRoots() []string {
+	//unix return single root
+	if os.PathSeparator == '/' {
+		return []string{"/"}
+	}
+	//windows return multipal roots
+	return []string{"C:\\", "D:\\"} //todo auto detect
+	/*
+		known := make(map[string]struct{})
+		for scource := range h.PushSources() {
+			f, err := fs.Open(scource)
+			if err != nil{
+				//ignore missing
+				continue
+			}
+			fs.dir
+		}*/
+
 }
 
 //filterPathes returns any path allowed, and any allows partterns with ErrBadPattern as error

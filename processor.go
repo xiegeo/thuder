@@ -96,6 +96,29 @@ func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action) (*
 	return &p, nil
 }
 
+func NewPushingProcessor(hc *HostConfig, actions chan<- action) (*Processor, error) {
+	var stack []layer
+	sources, isDeletes := hc.PushSources()
+	for _, root := range hc.PushRoots() {
+		var nodes []Node
+		for i := 0; i < len(sources); i++ {
+			from := joinSub(sources[i], root)
+			node, err := NewRootNode(from, isDeletes[i])
+			if err != nil {
+				LogP("Pushes skipped from %v because error %v.\n", from, err)
+				continue
+			}
+			nodes = append(nodes, *node)
+		}
+		stack = append(stack, layer{from: nodes, to: root})
+	}
+	p := Processor{
+		stack:   stack,
+		actions: actions,
+	}
+	return &p, nil
+}
+
 //NewProcessor create a new Processor
 func newProcessor(dirs []string, to string, actions chan<- action) (*Processor, error) {
 	var sources []Node
