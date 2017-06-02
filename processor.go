@@ -10,6 +10,8 @@ import (
 )
 
 //PullAndPush does push and pulls based on given configurations, it uses Processors
+//
+//TODO: push filtering
 func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
 	if debug == nil {
 		debug = ioutil.Discard
@@ -37,13 +39,11 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
 	}
 	apply(p)
 
-	/*
-		p, err = NewProcessor(mc.Pushes, "/", actions)
-		if err != nil {
-			return err
-		}
-		apply(p)
-	*/
+	p, err = NewPushingProcessor(hc, actions)
+	if err != nil {
+		return err
+	}
+	apply(p)
 
 	syncWriteCache()
 
@@ -105,8 +105,10 @@ func NewPushingProcessor(hc *HostConfig, actions chan<- action) (*Processor, err
 			from := joinSub(sources[i], root)
 			node, err := NewRootNode(from, isDeletes[i])
 			if err != nil {
-				LogP("Pushes skipped from %v because error %v.\n", from, err)
+				//LogP("Pushes skipped from %v because error %v.\n", from, err)
 				continue
+			} else {
+				LogP("pushes from %v to %v.\n", from, root)
 			}
 			nodes = append(nodes, *node)
 		}
