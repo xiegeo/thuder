@@ -68,11 +68,6 @@ func joinSub(parent, sub string) string {
 	return filepath.Join(parent, sub)
 }
 
-//LogP is the handler for logging live progress, in the form of fmt.Printf
-var LogP = func(format string, a ...interface{}) {
-	fmt.Printf(format, a...)
-}
-
 //NewPullingProcessor create a new Processor for pulling dirs from host to media.
 func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action) (*Processor, error) {
 	var stack []layer
@@ -250,7 +245,16 @@ func (p *Processor) doOnce() bool {
 	return true
 }
 
+var LogErrorOut io.Writer = os.Stderr
+
 func (p *Processor) logError(dir string, err error) {
 	//todo: change this to a file on removalbe media
-	fmt.Fprintln(os.Stderr, dir, err)
+	fmt.Fprintln(LogErrorOut, "Processor Error: ", dir, err)
+}
+
+var LogVerbosOut io.Writer = os.Stdout
+
+//LogP is the handler for logging live progress, in the form of fmt.Printf
+var LogP = func(format string, a ...interface{}) {
+	fmt.Fprintf(LogVerbosOut, format, a...)
 }

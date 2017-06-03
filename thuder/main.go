@@ -12,11 +12,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/xiegeo/thuder"
 )
 
-var logE = logLab.New(os.Stderr, "[thuder]", logLab.LstdFlags)
+var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
 func main() {
 	hc := &thuder.HostConfig{}
@@ -45,13 +46,20 @@ func main() {
 			panic(err)
 		}
 	}
+	lw := logger(hc)
+	thuder.LogErrorOut = lw
+	thuder.LogVerbosOut = lw
+	logE = logLab.New(lw, "[thuder err]", logLab.LstdFlags)
+	fmt.Fprintln(lw, "start thuder ", time.Now())
+	defer fmt.Fprintln(lw, "end thuder")
+
 	hc.Authorization = authorize
 	mc, err := hc.MediaConfig()
 	if err != nil {
 		logE.Println("Can not load Media Config", err)
 		return
 	}
-	fmt.Println(mc)
+	fmt.Fprintln(lw, mc)
 	err = thuder.PullAndPush(hc, mc, os.Stderr)
 	if err != nil {
 		logE.Println("Failed ", err)
@@ -104,7 +112,7 @@ var pswd = ""
 //authorize your removable device. You must customize this function
 func authorize(hc *thuder.HostConfig) bool {
 	if pswd == "" {
-		panic("please define pswd in a new pswd.go file," +
+		panic("please init pswd in a new pswd.go file," +
 			" or rewite authorize to use a different method")
 	}
 	p, err := ioutil.ReadFile(filepath.Join(hc.DefaultDirectory(), "pswd"))
