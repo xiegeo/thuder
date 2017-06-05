@@ -40,7 +40,7 @@ func main() {
 		if err != nil {
 			continue
 		}
-		f, err := os.Open(hc.MediaLocation)
+		f, err := os.Open(hc.DefaultDirectory())
 		if err != nil {
 			//fmt.Println(err)
 			if !os.IsNotExist(err) {
