@@ -6,7 +6,9 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	logLab "log"
 	"os"
@@ -17,9 +19,46 @@ import (
 	"github.com/xiegeo/thuder"
 )
 
+var monitor = flag.Bool("monitor", false, "enables monitoring for new mounts and runs pull and push automatically")
+
+var sleep = time.Second * 5
+
 var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
 func main() {
+	flag.Parse()
+	if !*monitor {
+		hc, err := hostConfig()
+		if err != nil {
+			panic(err)
+		}
+		runOnce(hc)
+		return
+	}
+	for ; ; time.Sleep(sleep) {
+		hc, err := hostConfig()
+		if err != nil {
+			continue
+		}
+		f, err := os.Open(hc.MediaLocation)
+		if err != nil {
+			//fmt.Println(err)
+			if !os.IsNotExist(err) {
+				logE.Println(err)
+			}
+			continue
+		}
+		runOnce(hc)
+		fmt.Println("waiting for media to be removed")
+		for err == nil {
+			time.Sleep(time.Second)
+			_, err = f.Stat()
+		}
+		fmt.Println("removed: ", err)
+	}
+}
+
+func hostConfig() (*thuder.HostConfig, error) {
 	hc := &thuder.HostConfig{}
 	fn := filepath.Join(hostConfigPath(), "thuder_host_config.json")
 	file, err := os.Open(fn)
@@ -29,7 +68,7 @@ func main() {
 			hc.MediaLocation = mediaLocation()
 			hc.UniqueHostName, err = thuder.GenerateUniqueHostname()
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
 			hc.Group = groupName()
 			err = saveFile(fn, hc)
@@ -37,15 +76,24 @@ func main() {
 				logE.Println(err)
 			}
 		} else {
-			panic(err)
+			return nil, err
 		}
 	} else {
 		dec := json.NewDecoder(file)
 		err = dec.Decode(hc)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
+	return hc, nil
+}
+
+func runOnce(hc *thuder.HostConfig) error {
+	defer func(a, b io.Writer, c *logLab.Logger) {
+		thuder.LogErrorOut = a
+		thuder.LogVerbosOut = b
+		logE = c
+	}(thuder.LogErrorOut, thuder.LogVerbosOut, logE)
 	lw := logger(hc)
 	thuder.LogErrorOut = lw
 	thuder.LogVerbosOut = lw
@@ -57,14 +105,15 @@ func main() {
 	mc, err := hc.MediaConfig()
 	if err != nil {
 		logE.Println("Can not load Media Config", err)
-		return
+		return err
 	}
 	fmt.Fprintln(lw, mc)
 	err = thuder.PullAndPush(hc, mc, os.Stderr)
 	if err != nil {
 		logE.Println("Failed ", err)
-		return
+		return err
 	}
+	return nil
 }
 
 func saveFile(fn string, v interface{}) error {
