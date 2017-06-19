@@ -1,5 +1,11 @@
 /*
-sample standalone app
+sample standalone app.
+
+create pswd.go with something like the following:
+
+	func init() {
+		pswd = "yourpassword3292390"
+	}
 
 */
 package main
