@@ -25,6 +25,9 @@ var sleep = time.Second * 5
 
 var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
+var allowPulls []string  //set this to default AllowPulls
+var allowPushes []string //set this to default AllowPushes
+
 func main() {
 	flag.Parse()
 	if !*monitor {
@@ -70,6 +73,8 @@ func hostConfig() (*thuder.HostConfig, error) {
 			if err != nil {
 				return nil, err
 			}
+			hc.AllowPulls = allowPulls
+			hc.AllowPushes = allowPushes
 			hc.Group = groupName()
 			err = saveFile(fn, hc)
 			if err != nil {
