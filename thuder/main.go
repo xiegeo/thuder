@@ -49,7 +49,7 @@ func main() {
 		if err != nil {
 			continue
 		}
-		f, err := os.Open(hc.DefaultDirectory())
+		_, err = os.Open(hc.DefaultDirectory())
 		if err != nil {
 			//fmt.Println(err)
 			if !os.IsNotExist(err) {
@@ -61,7 +61,7 @@ func main() {
 		fmt.Println("waiting for media to be removed")
 		for err == nil {
 			time.Sleep(time.Second)
-			_, err = f.Stat()
+			_, err = os.Open(hc.DefaultDirectory())
 		}
 		fmt.Println("removed: ", err)
 	}
