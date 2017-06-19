@@ -18,6 +18,7 @@ import (
 	"io/ioutil"
 	logLab "log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -31,8 +32,10 @@ var sleep = time.Second * 5
 
 var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
+// optional build time customizations
 var allowPulls []string  //set this to default AllowPulls
 var allowPushes []string //set this to default AllowPushes
+var postScript string    //set this to run after pull/push
 
 func main() {
 	flag.Parse()
@@ -117,6 +120,17 @@ func runOnce(hc *thuder.HostConfig) error {
 	if err != nil {
 		logE.Println("Can not load Media Config", err)
 		return err
+	}
+	if postScript != "" {
+		defer func() {
+			cmd := exec.Command(postScript)
+			cmd.Stdout = lw
+			cmd.Stderr = lw
+			err := cmd.Run()
+			if err != nil {
+				logE.Println(err)
+			}
+		}()
 	}
 	fmt.Fprintln(lw, mc)
 	err = thuder.PullAndPush(hc, mc, os.Stderr)
