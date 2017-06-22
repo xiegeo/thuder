@@ -133,7 +133,7 @@ func runOnce(hc *thuder.HostConfig) error {
 		}()
 	}
 	fmt.Fprintln(lw, mc)
-	err = thuder.PullAndPush(hc, mc, os.Stderr)
+	err = thuder.PullAndPush(hc, mc)
 	if err != nil {
 		logE.Println("Failed ", err)
 		return err

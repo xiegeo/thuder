@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -12,10 +11,7 @@ import (
 //PullAndPush does push and pulls based on given configurations, it uses Processors
 //
 //TODO: push filtering
-func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
-	if debug == nil {
-		debug = ioutil.Discard
-	}
+func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
 
 	actions := make(chan action, 8)
 	apply := func(p *Processor) {
@@ -26,9 +22,9 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig, debug io.Writer) error {
 				return
 			}
 			LogP("Appling %v actions to %v.\n", len(a.from), a.to)
-			err := applyAction(a)
-			if err != nil {
-				fmt.Fprintln(debug, err)
+			errs := applyAction(a)
+			if len(errs) != 0 {
+				p.logErrors(a.to, errs)
 			}
 		}
 	}
@@ -250,6 +246,10 @@ var LogErrorOut io.Writer = os.Stderr
 func (p *Processor) logError(dir string, err error) {
 	//todo: change this to a file on removalbe media
 	fmt.Fprintln(LogErrorOut, "Processor Error: ", dir, err)
+}
+func (p *Processor) logErrors(dir string, errs []error) {
+	//todo: change this to a file on removalbe media
+	fmt.Fprintln(LogErrorOut, "Processor Errors: ", dir, errs)
 }
 
 var LogVerbosOut io.Writer = os.Stdout
