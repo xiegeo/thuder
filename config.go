@@ -8,8 +8,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-
-	"github.com/bmatcuk/doublestar"
 )
 
 var (
@@ -25,9 +23,8 @@ type HostConfig struct {
 	MediaLocation  string                   //ie: /media/usb, E:\ ...
 	UniqueHostName string                   //ie: hostname-hardward-ids
 	Authorization  func(h *HostConfig) bool `json:"-"`
-	AllowPulls     []string                 //approved Pull/backup paths on the host device
-	AllowPushes    []string                 //approved Push/update paths on the host device
-	Group          string                   //used to select different default configeration files on the removable media
+	Filters        []Filter
+	Group          string //used to select different default configeration files on the removable media
 }
 
 //UniqueDirectory returns the path to the directory holding data on the
@@ -95,8 +92,6 @@ func (h *HostConfig) MediaConfig() (*MediaConfig, error) {
 		return nil, err
 	}
 	var errs, errs2 []error
-	mc.Pulls, errs = filterPathes(mc.Pulls, h.AllowPulls)
-	mc.Pushes, errs2 = filterPathes(mc.Pushes, h.AllowPushes)
 	if len(errs) != 0 || len(errs2) != 0 {
 		b := bytes.NewBuffer(nil)
 		for _, e := range append(errs, errs2...) {
@@ -125,34 +120,6 @@ func (h *HostConfig) PushRoots() []string {
 			fs.dir
 		}*/
 
-}
-
-//filterPathes returns any path allowed, and any allows partterns with ErrBadPattern as error
-func filterPathes(pathes, allows []string) ([]string, []error) {
-	var out []string
-	errmap := make(map[int]error)
-	var errs []error
-	for _, path := range pathes {
-		for i, allow := range allows {
-			if errmap[i] != nil {
-				continue
-			}
-			m, err := doublestar.PathMatch(allow, path)
-			if err != nil {
-				if err == doublestar.ErrBadPattern {
-					err = errors.New(allow)
-					errmap[i] = err
-				}
-				errs = append(errs, err)
-				continue
-			}
-			if m {
-				out = append(out, path)
-				break
-			}
-		}
-	}
-	return out, errs
 }
 
 //MediaConfig stores configation data for a removable media
