@@ -33,9 +33,8 @@ var sleep = time.Second * 5
 var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
 // optional build time customizations
-var allowPulls []string  //set this to default AllowPulls
-var allowPushes []string //set this to default AllowPushes
-var postScript string    //set this to run after pull/push
+var filters []thuder.Filter //set this to set default host filters
+var postScript string       //set this to run after pull/push
 
 func main() {
 	flag.Parse()
@@ -82,8 +81,7 @@ func hostConfig() (*thuder.HostConfig, error) {
 			if err != nil {
 				return nil, err
 			}
-			hc.AllowPulls = allowPulls
-			hc.AllowPushes = allowPushes
+			hc.Filters = filters
 			hc.Group = groupName()
 			err = saveFile(fn, hc)
 			if err != nil {

@@ -7,13 +7,17 @@ import (
 	"testing"
 )
 
+func acceptAll(n *Node) bool {
+	return true
+}
+
 func TestGetAppliedTo(t *testing.T) {
 	cw, _ := filepath.Abs(".")
 	rootN, err := NewRootNode(cw, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := NewCollection()
+	c := NewCollection(acceptAll)
 	err = c.Add(rootN)
 	if err != nil {
 		t.Fatal(err)
@@ -45,7 +49,7 @@ func TestGetAppliedTo(t *testing.T) {
 		}
 	})
 
-	c = NewCollection()
+	c = NewCollection(acceptAll)
 	c.AddList(&FileContext{from: "/overwritten"}, []os.FileInfo{&testFileInfo{name: "AddFile"}})
 	c.AddList(&FileContext{from: "/overwritten"}, []os.FileInfo{&testFileInfo{name: "AddDir"}})
 	c.AddList(&FileContext{from: "/other"}, []os.FileInfo{&testFileInfo{name: "AddFile"}})

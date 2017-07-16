@@ -6,12 +6,32 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 //PullAndPush does push and pulls based on given configurations, it uses Processors
 //
 //TODO: push filtering
 func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
+
+	err := PrepareFilters(hc.Filters)
+	if err != nil {
+		return fmt.Errorf("HostConfig PrepareFilters error: %v", err)
+	}
+	err = PrepareFilters(mc.Filters)
+	if err != nil {
+		return fmt.Errorf("MediaConfig PrepareFilters error: %v", err)
+	}
+	isPush := false
+	now := time.Now()
+	accept := func(n *Node) bool {
+		_, a := MatchFilters(hc.Filters, n, isPush, now)
+		if !a {
+			return false
+		}
+		_, a = MatchFilters(mc.Filters, n, isPush, now)
+		return a
+	}
 
 	actions := make(chan action, 8)
 	apply := func(p *Processor) {
@@ -29,13 +49,14 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
 		}
 	}
 
-	p, err := NewPullingProcessor(mc.Pulls, hc.PullTarget(), actions)
+	p, err := NewPullingProcessor(mc.Pulls, hc.PullTarget(), actions, accept)
 	if err != nil {
 		return err
 	}
 	apply(p)
 
-	p, err = NewPushingProcessor(hc, actions)
+	isPush = true
+	p, err = NewPushingProcessor(hc, actions, accept)
 	if err != nil {
 		return err
 	}
@@ -50,6 +71,7 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
 type Processor struct {
 	stack   []layer
 	actions chan<- action // a buffered channal of queued actions to take
+	accept  func(n *Node) bool
 }
 
 //joinSub is filePath.Join with additional special charcter handling
@@ -65,7 +87,7 @@ func joinSub(parent, sub string) string {
 }
 
 //NewPullingProcessor create a new Processor for pulling dirs from host to media.
-func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action) (*Processor, error) {
+func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action, accept func(n *Node) bool) (*Processor, error) {
 	var stack []layer
 	for _, fullname := range dirs {
 		rootNode, err := NewRootNode(fullname, false)
@@ -83,11 +105,12 @@ func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action) (*
 	p := Processor{
 		stack:   stack,
 		actions: actions,
+		accept:  accept,
 	}
 	return &p, nil
 }
 
-func NewPushingProcessor(hc *HostConfig, actions chan<- action) (*Processor, error) {
+func NewPushingProcessor(hc *HostConfig, actions chan<- action, accept func(n *Node) bool) (*Processor, error) {
 	var stack []layer
 	sources, isDeletes := hc.PushSources()
 	for _, root := range hc.PushRoots() {
@@ -108,12 +131,13 @@ func NewPushingProcessor(hc *HostConfig, actions chan<- action) (*Processor, err
 	p := Processor{
 		stack:   stack,
 		actions: actions,
+		accept:  accept,
 	}
 	return &p, nil
 }
 
 //NewProcessor create a new Processor
-func newProcessor(dirs []string, to string, actions chan<- action) (*Processor, error) {
+func newProcessor(dirs []string, to string, actions chan<- action, accept func(n *Node) bool) (*Processor, error) {
 	var sources []Node
 	for _, fullname := range dirs {
 		rootNode, err := NewRootNode(fullname, false)
@@ -127,6 +151,7 @@ func newProcessor(dirs []string, to string, actions chan<- action) (*Processor, 
 			layer{from: sources, to: to},
 		},
 		actions: actions,
+		accept:  accept,
 	}
 	return &p, nil
 }
@@ -206,7 +231,7 @@ func (p *Processor) doOnce() bool {
 	var l layer
 	p.stack, l = p.stack[:top], p.stack[top] //pop from stack
 
-	c := NewCollection()
+	c := NewCollection(p.accept)
 	for _, node := range l.from {
 		err := c.Add(&node)
 		if err != nil {

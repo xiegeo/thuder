@@ -104,7 +104,7 @@ func TestProcessor(t *testing.T) {
 	}
 
 	actions := make(chan action, 8)
-	p, err := newProcessor(dirs[:2], root+"t", actions)
+	p, err := newProcessor(dirs[:2], root+"t", actions, acceptAll)
 	if err != nil {
 		t.Fatal(err)
 	}

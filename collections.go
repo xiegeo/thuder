@@ -21,13 +21,15 @@ var (
 //Collection is a document tree that collects meta data of changes in a directory
 //to be made.
 type Collection struct {
-	nodes map[string][]Node
+	nodes  map[string][]Node
+	accept func(*Node) bool
 }
 
-//NewCollection initializes a new empty Collection.
-func NewCollection() *Collection {
+//NewCollection initializes a new empty Collection, with accept function
+func NewCollection(accept func(*Node) bool) *Collection {
 	return &Collection{
-		nodes: make(map[string][]Node),
+		nodes:  make(map[string][]Node),
+		accept: accept,
 	}
 }
 
@@ -64,14 +66,18 @@ func (c *Collection) Add(parent *Node) error {
 	return nil
 }
 
-//AddList is same as Add, but with give FileContext and FileInfo slice
+//AddList is same as Add, but with given FileContext and FileInfo slice
 func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 	for _, fi := range list {
-		name := strings.ToUpper(fi.Name())
 		node := Node{
 			fc:   fc,
 			info: fi,
 		}
+		if !c.accept(&node) {
+			break
+		}
+		name := strings.ToUpper(fi.Name())
+
 		old := c.nodes[name]
 
 		/*
@@ -123,7 +129,7 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 //
 //The target dir must have been created
 func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs [][]Node, err error) {
-	exist := NewCollection() //Collect nodes from target
+	exist := NewCollection(c.accept) //Collect nodes from target
 	t, err := NewRootNode(target, true)
 	if err == nil { //only add if target can be opend
 		err = exist.Add(t)

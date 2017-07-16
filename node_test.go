@@ -81,7 +81,7 @@ func TestRootNode(t *testing.T) {
 			}
 			t.Logf("%s", node)
 
-			c := NewCollection()
+			c := NewCollection(acceptAll)
 			err = c.Add(node)
 			if err != nil {
 				if expErr(tc, err) {

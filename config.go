@@ -124,8 +124,9 @@ func (h *HostConfig) PushRoots() []string {
 
 //MediaConfig stores configation data for a removable media
 type MediaConfig struct {
-	Pulls  []string //paths to Pull/backup from
-	Pushes []string //paths to Push/update to the host device
+	Pulls   []string //paths to Pull/backup from
+	Pushes  []string //paths to Push/update to the host device
+	Filters []Filter //additional filters if host filters allows action
 }
 
 //LoadMediaConfig loads MediaConfig from path
