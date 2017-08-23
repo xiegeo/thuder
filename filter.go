@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//Filter blocks or allows a file copy
 type Filter struct {
 	Allow            bool   //allow or block if filter is matched
 	Direction        string `json:",omitempty"` //(pull/push/"")
@@ -19,7 +20,7 @@ type Filter struct {
 	SubFilters       []Filter `json:",omitempty"` //on match, use subfilters
 }
 
-//Prepare prepares a Filter for usage, and return any errors in filter defination
+//Prepare prepares a Filter for usage, and return any errors in filter definition
 func (f *Filter) Prepare() error {
 	if len(f.Direction) > 0 && f.Direction != "pull" && f.Direction != "push" {
 		return fmt.Errorf("unknown Direction %v should be (pull/push/\"\")", f.Direction)
@@ -42,6 +43,7 @@ func (f *Filter) Prepare() error {
 	return PrepareFilters(f.SubFilters)
 }
 
+//PrepareFilters runs perpare on a slice of filters
 func PrepareFilters(fs []Filter) error {
 	for i := 0; i < len(fs); i++ {
 		err := fs[i].Prepare()
@@ -90,6 +92,7 @@ func (f *Filter) Match(n *Node, push bool, now time.Time) (match bool, allow boo
 	return true, f.Allow
 }
 
+//MatchFilters tests a node against filters
 func MatchFilters(fs []Filter, n *Node, push bool, now time.Time) (match bool, allow bool) {
 	for _, sub := range fs {
 		m, a := sub.Match(n, push, now)

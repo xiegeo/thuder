@@ -102,6 +102,7 @@ func (h *HostConfig) MediaConfig() (*MediaConfig, error) {
 	return mc, nil
 }
 
+//PushRoots returns the roots of the host file system, which a push touches
 func (h *HostConfig) PushRoots() []string {
 	//unix return single root
 	if os.PathSeparator == '/' {

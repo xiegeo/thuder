@@ -110,6 +110,7 @@ func NewPullingProcessor(dirs []string, pullTo string, actions chan<- action, ac
 	return &p, nil
 }
 
+//NewPushingProcessor create a new Processor for pushing dirs from media to host.
 func NewPushingProcessor(hc *HostConfig, actions chan<- action, accept func(n *Node) bool) (*Processor, error) {
 	var stack []layer
 	sources, isDeletes := hc.PushSources()
@@ -172,7 +173,7 @@ type layer struct {
 	to   string
 }
 
-//String returns string debugging
+//String returns string for debugging
 func (l layer) String() string {
 	b := bytes.NewBufferString("{from:[")
 	for _, n := range l.from {
@@ -266,17 +267,17 @@ func (p *Processor) doOnce() bool {
 	return true
 }
 
+//LogErrorOut used to redirect error logs
 var LogErrorOut io.Writer = os.Stderr
 
 func (p *Processor) logError(dir string, err error) {
-	//todo: change this to a file on removalbe media
 	fmt.Fprintln(LogErrorOut, "Processor Error: ", dir, err)
 }
 func (p *Processor) logErrors(dir string, errs []error) {
-	//todo: change this to a file on removalbe media
 	fmt.Fprintln(LogErrorOut, "Processor Errors: ", dir, errs)
 }
 
+//LogVerbosOut used to redirect verbos logs
 var LogVerbosOut io.Writer = os.Stdout
 
 //LogP is the handler for logging live progress, in the form of fmt.Printf
