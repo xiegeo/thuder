@@ -70,6 +70,11 @@ func main() {
 }
 
 func hostConfig() (*thuder.HostConfig, error) {
+	uhn, err := thuder.GenerateUniqueHostname()
+	if err != nil {
+		return nil, err
+	}
+
 	hc := &thuder.HostConfig{}
 	fn := filepath.Join(hostConfigPath(), "thuder_host_config.json")
 	file, err := os.Open(fn)
@@ -77,10 +82,7 @@ func hostConfig() (*thuder.HostConfig, error) {
 		if os.IsNotExist(err) {
 			//load default HostConfig
 			hc.MediaLocation = mediaLocation()
-			hc.UniqueHostName, err = thuder.GenerateUniqueHostname()
-			if err != nil {
-				return nil, err
-			}
+			hc.UniqueHostName = uhn
 			hc.Filters = filters
 			hc.Group = groupName()
 			err = saveFile(fn, hc)
@@ -95,6 +97,13 @@ func hostConfig() (*thuder.HostConfig, error) {
 		err = dec.Decode(hc)
 		if err != nil {
 			return nil, err
+		}
+		if hc.UniqueHostName != uhn {
+			hc.UniqueHostName == uhn
+			err = saveFile(fn, hc)
+			if err != nil {
+				logE.Println(err)
+			}
 		}
 	}
 	return hc, nil
