@@ -99,7 +99,7 @@ func hostConfig() (*thuder.HostConfig, error) {
 			return nil, err
 		}
 		if hc.UniqueHostName != uhn {
-			hc.UniqueHostName == uhn
+			hc.UniqueHostName = uhn
 			err = saveFile(fn, hc)
 			if err != nil {
 				logE.Println(err)
