@@ -159,7 +159,7 @@ func GenerateUniqueHostname() (string, error) {
 	name.WriteString(hn)
 	ifs, _ := net.Interfaces()
 	for _, v := range ifs {
-		fmt.Println(v)
+		//fmt.Println(v)
 		mac := v.HardwareAddr
 		if v.Flags&net.FlagLoopback != 0 {
 			continue // no loop backs
