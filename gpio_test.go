@@ -8,10 +8,10 @@ import (
 func TestGPIO(t *testing.T) {
 	lightOn()
 	lightOff()
-	flashLED()
+	FlashLED()
 	PinID = 0
 	time.Sleep(time.Second / 10)
-	flashLED()
-	flashLED()
+	FlashLED()
+	FlashLED()
 	time.Sleep(2 * time.Second)
 }

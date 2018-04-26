@@ -18,7 +18,8 @@ var ledCounter int
 var flashing bool
 var ledLock sync.Mutex
 
-func flashLED() {
+//FlashLED flashes the led at PinID once, if possible
+func FlashLED() {
 	ledLock.Lock()
 	defer ledLock.Unlock()
 	if gpioErr != nil {
@@ -39,13 +40,35 @@ func flashLED() {
 				ledLock.Unlock()
 				t := 500 * time.Microsecond / time.Duration(c)
 				LogP("flash for %v\n", t)
-				lightOn()
+				LEDOn()
 				time.Sleep(t)
-				lightOff()
+				LEDOff()
 				time.Sleep(t)
 				ledLock.Lock()
 			}
 			flashing = false
 		}()
+	}
+}
+
+var ledGroup sync.WaitGroup
+var onCounter int
+
+func LEDOn() {
+	ledLock.Lock()
+	defer ledLock.Unlock()
+	if gpioErr != nil {
+		gpioErr = setupGPIO()
+	}
+	onCounter++
+	lightOn()
+}
+
+func LEDOff() {
+	ledLock.Lock()
+	defer ledLock.Unlock()
+	onCounter--
+	if onCounter == 0 {
+		lightOff()
 	}
 }

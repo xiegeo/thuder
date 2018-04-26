@@ -229,6 +229,7 @@ func (p *Processor) doOnce() bool {
 	if top < 0 {
 		return false
 	}
+	FlashLED()
 	var l layer
 	p.stack, l = p.stack[:top], p.stack[top] //pop from stack
 

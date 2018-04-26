@@ -20,6 +20,8 @@ func init() {
 }
 
 func atomicCopy(n Node, to string) error {
+	LEDOn()
+	defer LEDOff()
 	a, err := newAtomicFile(to, n.info.Name(), n.FileMode())
 	if err != nil {
 		return err
