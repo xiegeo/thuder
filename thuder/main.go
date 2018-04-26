@@ -46,6 +46,7 @@ func main() {
 		runOnce(hc)
 		return
 	}
+	thuder.FlashLED() //flash once for monitoring on
 	for ; ; time.Sleep(sleep) {
 		hc, err := hostConfig()
 		if err != nil {
