@@ -14,7 +14,7 @@ func setupGPIO() error {
 	if err != nil {
 		return err
 	}
-	pin := rpio.Pin(pinID)
+	pin := rpio.Pin(PinID)
 	pin.Output()
 	lightOn = pin.High
 	lightOff = pin.Low
