@@ -62,6 +62,8 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
 	}
 	apply(p)
 
+	FlashLED()
+
 	syncWriteCache()
 
 	return nil
