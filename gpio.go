@@ -6,7 +6,16 @@ import (
 	"time"
 )
 
-var PinID = -1 //set this use a pin
+var ledLock sync.Mutex
+
+var pinID = -1 //set this use a pin
+
+func SetPinID(id int) {
+	ledLock.Lock()
+	defer ledLock.Unlock()
+
+	pinID = id
+}
 
 var gpioErr = errors.New("Not Initialized")
 
@@ -16,7 +25,6 @@ var lightOff = func() { LogP("lightOff (error: %s)\n", gpioErr) }
 
 var ledCounter int
 var flashing bool
-var ledLock sync.Mutex
 
 //FlashLED flashes the led at PinID once, if possible
 func FlashLED() {
