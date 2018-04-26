@@ -6,10 +6,6 @@ import (
 	"github.com/stianeikeland/go-rpio"
 )
 
-func init() {
-	gpioErr = setupGPIO()
-}
-
 func setupGPIO() error {
 	if PinID < 0 {
 		return errors.New("need PinID")

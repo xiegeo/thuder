@@ -7,9 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
-
 	"testing"
+	"time"
 
 	"github.com/spf13/afero"
 )

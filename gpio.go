@@ -8,7 +8,7 @@ import (
 
 var PinID = -1 //set this use a pin
 
-var gpioErr = errors.New("No Hardward Support")
+var gpioErr = errors.New("Not Initialized")
 
 var lightOn = func() { LogP("lightOn (error: %s)\n", gpioErr) }
 
@@ -21,6 +21,9 @@ var ledLock sync.Mutex
 func flashLED() {
 	ledLock.Lock()
 	defer ledLock.Unlock()
+	if gpioErr != nil {
+		gpioErr = setupGPIO()
+	}
 	ledCounter++
 	if !flashing {
 		flashing = true
