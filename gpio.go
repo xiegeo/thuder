@@ -46,7 +46,7 @@ func FlashLED() {
 				}
 				ledCounter--
 				ledLock.Unlock()
-				t := 500 * time.Microsecond / time.Duration(c)
+				t := 500 * time.Millisecond / time.Duration(c)
 				LogP("flash for %v\n", t)
 				LEDOn()
 				time.Sleep(t)
