@@ -17,4 +17,5 @@ func setupGPIO() error {
 	pin.Output()
 	lightOn = pin.High
 	lightOff = pin.Low
+	return nil
 }
