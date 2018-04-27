@@ -19,9 +19,17 @@ func SetPinID(id int) {
 
 var gpioErr = errors.New("Not Initialized")
 
-var lightOn = func() { LogP("lightOn (error: %s)\n", gpioErr) }
+var lightOn = func() {
+	if pinID != -1 {
+		LogP("lightOn (error: %s)\n", gpioErr)
+	}
+}
 
-var lightOff = func() { LogP("lightOff (error: %s)\n", gpioErr) }
+var lightOff = func() {
+	if pinID != -1 {
+		LogP("lightOff (error: %s)\n", gpioErr)
+	}
+}
 
 var ledCounter int
 var flashing bool
@@ -47,7 +55,7 @@ func FlashLED() {
 				ledCounter--
 				ledLock.Unlock()
 				t := 500 * time.Millisecond / time.Duration(c)
-				LogP("flash for %v\n", t)
+				//LogP("flash for %v\n", t)
 				LEDOn()
 				time.Sleep(t)
 				LEDOff()
