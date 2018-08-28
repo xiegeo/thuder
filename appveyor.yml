@@ -11,7 +11,7 @@ for:
       only:
         - stack: go 1.11
     install:
-	  - rd c:\go /s /q
+      - rd c:\go /s /q
       - appveyor DownloadFile https://dl.google.com/go/go1.11.windows-amd64.zip
       - 7z x go1.11.windows-amd64.zip -oC:\ >nul
 build_script:
