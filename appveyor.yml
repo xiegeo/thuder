@@ -7,15 +7,6 @@ stack:
   - go 1.10
   - go 1.11
 for:
-version: '{build}'
-clone_folder: C:\gopath\src\github.com\xiegeo\thuder
-environment:
-  GOPATH: C:\gopath
-  GO111MODULE: on
-stack: 
-  - go 1.10
-  - go 1.11
-for:
   - matrix:
       only:
         - stack: go 1.10
