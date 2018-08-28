@@ -19,6 +19,13 @@ func TestGenerateUniqueHostname(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(u) < 16 {
+		t.Fatal(u, "is too short")
+	}
+	u2, _ := GenerateUniqueHostname()
+	if u != u2 {
+		t.Fatal(u, "and", u2, "should be same")
+	}
 	var macpart string
 	if runtime.GOOS == "windows" {
 		r := regexp.MustCompile("_[0-9A-F]{4}-[0-9A-F]{4}$")
