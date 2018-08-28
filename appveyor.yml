@@ -6,6 +6,14 @@ environment:
 stack: 
   - go 1.10
   - go 1.11
+for:
+  - matrix:
+      only:
+	    - stack: go 1.11
+    install:
+	  - rd c:\go /s /q
+      - appveyor DownloadFile https://dl.google.com/go/go1.11.windows-amd64.zip
+      - 7z x go1.11.windows-amd64.zip -oC:\ >nul
 build_script:
 - cmd: >-
     go version
