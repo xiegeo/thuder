@@ -4,10 +4,10 @@ environment:
   GOPATH: C:\gopath
   GO111MODULE: on
 matrix:
-- stack: go 1.10
-  platform: x86
-- stack: go 1.11
-  platform: x64
+  - stack: go 1.10
+    platform: x86
+  - stack: go 1.11
+    platform: x64
 build_script:
 - cmd: >-
     go version
