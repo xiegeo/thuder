@@ -2,6 +2,7 @@ version: '{build}'
 clone_folder: C:\gopath\src\github.com\xiegeo\thuder
 environment:
   GOPATH: C:\gopath
+  GO111MODULE: on
 build_script:
 - cmd: >-
     go version
