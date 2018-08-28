@@ -12,6 +12,8 @@ for:
         - stack: go 1.10
     environment:
       GOARCH: 386
+    test_script:
+      - cmd: go test -v github.com/xiegeo/thuder
   - matrix:
       only:
         - stack: go 1.11
@@ -19,6 +21,8 @@ for:
       - rd c:\go /s /q
       - appveyor DownloadFile https://dl.google.com/go/go1.11.windows-amd64.zip
       - 7z x go1.11.windows-amd64.zip -oC:\ >nul
+    test_script:
+      - cmd: go test -v -race github.com/xiegeo/thuder
 build_script:
 - cmd: >-
     go version
@@ -28,5 +32,6 @@ build_script:
     go get -v -t github.com/xiegeo/thuder/...
 
     go build github.com/xiegeo/thuder
-test_script:
-- cmd: go test -v -race github.com/xiegeo/thuder
+	
+    go build github.com/xiegeo/thuder/thuder
+
