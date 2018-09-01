@@ -24,7 +24,7 @@ for:
     test_script:
       - cmd: go test -v -race github.com/xiegeo/thuder
 build_script:
-- cmd: >-
+- cmd: |-
     go version
     go env
     go get -v -t github.com/xiegeo/thuder/...
