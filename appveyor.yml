@@ -11,7 +11,8 @@ for:
         - stack: go 1.10 386
     environment:
       GOARCH: 386
-      GOROOT: C:\go110-x86
+      GOROOT: C:\go110
+      PATH: C:\go110;%PATH%
     test_script:
       - cmd: go test -v github.com/xiegeo/thuder
   - matrix:
