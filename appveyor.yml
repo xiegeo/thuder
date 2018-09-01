@@ -12,7 +12,7 @@ for:
     environment:
       GOARCH: 386
       GOROOT: C:\go110
-      PATH: C:\go110;%PATH%
+      PATH: C:\go110\bin;%PATH%
     test_script:
       - cmd: go test -v github.com/xiegeo/thuder
   - matrix:
@@ -26,6 +26,7 @@ for:
       - cmd: go test -v -race github.com/xiegeo/thuder
 build_script:
 - cmd: |-
+    PATH
     go version
     go env
     go get -v -t github.com/xiegeo/thuder/...
