@@ -67,7 +67,6 @@ func FlashLED() {
 	}
 }
 
-var ledGroup sync.WaitGroup
 var onCounter int
 
 func LEDOn() {

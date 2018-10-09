@@ -1,6 +1,7 @@
 package thuder
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -133,6 +134,8 @@ func nextSuffix() string {
 func tempFile(dir, prefix string, perm os.FileMode) (f File, err error) {
 	if dir == "" {
 		//dir = fs.TempDir()
+		err = fmt.Errorf("dir is requared for atomic_file_writer")
+		return
 	}
 
 	nconflict := 0

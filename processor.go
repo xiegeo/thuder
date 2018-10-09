@@ -71,12 +71,13 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
 
 //Processor does the recursive, depth first, processing of directories
 type Processor struct {
-	stack   []layer
-	actions chan<- action // a buffered channal of queued actions to take
-	accept  func(n *Node) bool
+	stack      []layer
+	actions    chan<- action // a buffered channel of queued actions to take
+	accept     func(n *Node) bool
+	errorCount int
 }
 
-//joinSub is filePath.Join with additional special charcter handling
+//joinSub is filePath.Join with additional special character handling
 func joinSub(parent, sub string) string {
 	if filepath.Separator == '\\' && len(sub) > 1 && sub[1] == ':' {
 		if len(sub) > 2 {
@@ -274,10 +275,19 @@ func (p *Processor) doOnce() bool {
 var LogErrorOut io.Writer = os.Stderr
 
 func (p *Processor) logError(dir string, err error) {
+	p.errorCount++
 	fmt.Fprintln(LogErrorOut, "Processor Error: ", dir, err)
 }
 func (p *Processor) logErrors(dir string, errs []error) {
+	p.errorCount += len(errs)
 	fmt.Fprintln(LogErrorOut, "Processor Errors: ", dir, errs)
+}
+
+func (p *Processor) LoggedErrors() error {
+	if p.errorCount == 0 {
+		return nil
+	}
+	return fmt.Errorf("encountered %v errors", p.errorCount)
 }
 
 //LogVerbosOut used to redirect verbos logs

@@ -22,6 +22,7 @@ func NewRootNode(fullname string, isDelete bool) (*Node, error) {
 	if !fs.IsAbs(fullname) {
 		return nil, ErrBadPath
 	}
+	fullname = filepath.Clean(fullname)
 	dir, _ := filepath.Split(fullname)
 	fc := &FileContext{
 		from:     dir,
