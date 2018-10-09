@@ -41,7 +41,7 @@ func PullAndPush(hc *HostConfig, mc *MediaConfig) error {
 			if len(a.from) == 0 {
 				return
 			}
-			LogP("Appling %v actions to %v.\n", len(a.from), a.to)
+			LogP("Applying %v actions to %v.\n", len(a.from), a.to)
 			errs := applyAction(a)
 			if len(errs) != 0 {
 				p.logErrors(a.to, errs)
@@ -290,10 +290,10 @@ func (p *Processor) LoggedErrors() error {
 	return fmt.Errorf("encountered %v errors", p.errorCount)
 }
 
-//LogVerbosOut used to redirect verbos logs
-var LogVerbosOut io.Writer = os.Stdout
+//LogVerboseOut used to redirect verbose logs
+var LogVerboseOut io.Writer = os.Stdout
 
 //LogP is the handler for logging live progress, in the form of fmt.Printf
 var LogP = func(format string, a ...interface{}) {
-	fmt.Fprintf(LogVerbosOut, format, a...)
+	fmt.Fprintf(LogVerboseOut, format, a...)
 }

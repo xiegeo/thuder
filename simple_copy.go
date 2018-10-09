@@ -34,7 +34,7 @@ func Copy(source, dest string, filters []Filter) error {
 		if len(a.from) == 0 {
 			return p.LoggedErrors()
 		}
-		LogP("Appling %v actions to %v.\n", len(a.from), a.to)
+		LogP("Applying %v actions to %v.\n", len(a.from), a.to)
 		errs := applyAction(a)
 		if len(errs) != 0 {
 			p.logErrors(a.to, errs)

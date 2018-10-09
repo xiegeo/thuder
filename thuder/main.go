@@ -113,12 +113,12 @@ func hostConfig() (*thuder.HostConfig, error) {
 func runOnce(hc *thuder.HostConfig) error {
 	defer func(a, b io.Writer, c *logLab.Logger) {
 		thuder.LogErrorOut = a
-		thuder.LogVerbosOut = b
+		thuder.LogVerboseOut = b
 		logE = c
-	}(thuder.LogErrorOut, thuder.LogVerbosOut, logE)
+	}(thuder.LogErrorOut, thuder.LogVerboseOut, logE)
 	lw := logger(hc)
 	thuder.LogErrorOut = lw
-	thuder.LogVerbosOut = lw
+	thuder.LogVerboseOut = lw
 	logE = logLab.New(lw, "[thuder err]", logLab.LstdFlags)
 	fmt.Fprintln(lw, "start thuder ", time.Now())
 	defer fmt.Fprintln(lw, "end thuder")
