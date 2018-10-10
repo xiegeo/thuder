@@ -24,7 +24,6 @@ func Copy(source, dest string, filters []Filter) error {
 		actions: actions,
 		accept: func(n *Node) bool {
 			_, a := MatchFilters(filters, n, true, now)
-			fmt.Println(n, a)
 			return a
 		},
 	}
