@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-//should only be used from one goroutine
 var copyBufs = make(chan []byte, 4)
 
 func init() {
