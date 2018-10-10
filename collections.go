@@ -74,7 +74,7 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 			info: fi,
 		}
 		if !c.accept(&node) {
-			break
+			continue
 		}
 		name := strings.ToUpper(fi.Name())
 
