@@ -23,7 +23,8 @@ func Copy(source, dest string, filters []Filter) error {
 		stack:   []layer{{from: []Node{*sourceNode}, to: dest}},
 		actions: actions,
 		accept: func(n *Node) bool {
-			_, a := MatchFilters(filters, n, false, now)
+			_, a := MatchFilters(filters, n, true, now)
+			fmt.Println(n, a)
 			return a
 		},
 	}
