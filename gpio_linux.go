@@ -3,7 +3,7 @@ package thuder
 import (
 	"errors"
 
-	"github.com/stianeikeland/go-rpio"
+	"github.com/stianeikeland/go-rpio/v4"
 )
 
 func setupGPIO() error {
