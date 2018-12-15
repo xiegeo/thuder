@@ -1,0 +1,34 @@
+
+# golangci-lint run
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0.7
+  maligned:
+    suggest-new: true
+
+linters:
+  enable-all: true
+  disable:
+    - errcheck
+    - gocyclo
+    - lll
+    - prealloc
+    - gosec
+    - maligned
+    - gochecknoinits
+    - gochecknoglobals
+    - scopelint
+    - nakedret
+    - goconst
+
+issues:
+  exclude:
+    - "G104: Errors unhandled." # turn off errcheck
+    - "declaration of \"[a-z]\" shadows declaration at .*_test.go" # ignore shadowing a single charcter varibles in tests
+    - "declaration of .err. shadows declaration at .*" # ignore shadowing of the err variblessdss
+
+output:
+  format: line-number

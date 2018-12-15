@@ -131,14 +131,15 @@ func (c *Collection) AddList(fc *FileContext, list []os.FileInfo) {
 func (c *Collection) GetAppliedTo(target string) (deletes []Node, changedfiles []Node, dirs [][]Node, err error) {
 	exist := NewCollection(c.accept) //Collect nodes from target
 	t, err := NewRootNode(target, true)
-	if err == nil { //only add if target can be opend
+	switch {
+	case err == nil:
 		err = exist.Add(t)
 		if err != nil {
 			return
 		}
-	} else if os.IsNotExist(err) {
+	case os.IsNotExist(err):
 		err = nil // target is not created yet, so just treat it as empty
-	} else {
+	default:
 		return // returns other unexpected errors
 	}
 

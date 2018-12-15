@@ -152,7 +152,7 @@ func newProcessor(dirs []string, to string, actions chan<- action, accept func(n
 	}
 	p := Processor{
 		stack: []layer{
-			layer{from: sources, to: to},
+			{from: sources, to: to},
 		},
 		actions: actions,
 		accept:  accept,
