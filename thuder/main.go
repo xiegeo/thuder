@@ -1,10 +1,13 @@
 /*
-sample standalone app.
+Sample standalone app.
 
-create pswd.go with something like the following:
+Create pswd.go with something like the following:
 
 	func init() {
 		pswd = "yourpassword3292390"
+		thuder.SetPinID(17) //to use pin 17 as light indicator
+		filters = []thuder.Filter{...} //filters for what oprations are allowed by the host
+		postScript = "..." //a commad to run after files are synchronized.
 	}
 
 */
@@ -26,9 +29,14 @@ import (
 	"github.com/xiegeo/thuder"
 )
 
-var monitor = flag.Bool("monitor", false, "enables monitoring for new mounts and runs pull and push automatically")
+var monitor = flag.Bool("monitor", false, "Enables monitoring for new mounts and runs pull and push automatically.")
 
-var sleep = time.Second * 5
+var hostConfigName = flag.String("host_config", "", "Set the path to the read and write host config. "+
+	"For security purpurses, this file should not be on the same storage device that thuder is backing up to, "+
+	"as such is equivalent to allowing all operations listed in that device. "+
+	"Default value is empty, which disables using config file from overwriting build time settings.")
+
+var sleep = time.Second * 5 //How often to pull mediaLocation to detect new devices.
 
 var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
@@ -70,41 +78,58 @@ func main() {
 	}
 }
 
-func hostConfig() (*thuder.HostConfig, error) {
+//loadDefault loads the default HostConfig
+func loadDefault() (*thuder.HostConfig, error) {
+	hc := &thuder.HostConfig{}
+	hc.MediaLocation = mediaLocation()
 	uhn, err := thuder.GenerateUniqueHostname()
 	if err != nil {
 		return nil, err
 	}
+	hc.UniqueHostName = uhn
+	hc.Filters = filters
+	hc.Group = groupName()
+	return hc, nil
+}
 
-	hc := &thuder.HostConfig{}
-	fn := filepath.Join(hostConfigPath(), "thuder_host_config.json")
+func hostConfig() (*thuder.HostConfig, error) {
+	fn := *hostConfigName
+	if fn == "" {
+		return loadDefault()
+	}
 	file, err := os.Open(fn)
 	if err != nil {
 		if os.IsNotExist(err) {
-			//load default HostConfig
-			hc.MediaLocation = mediaLocation()
-			hc.UniqueHostName = uhn
-			hc.Filters = filters
-			hc.Group = groupName()
+			//load and save default HostConfig
+			hc, err := loadDefault()
+			if err != nil {
+				return nil, err
+			}
 			err = saveFile(fn, hc)
 			if err != nil {
 				logE.Println(err)
 			}
-		} else {
-			return nil, err
+			return hc, nil
 		}
-	} else {
-		dec := json.NewDecoder(file)
-		err = dec.Decode(hc)
+		return nil, err
+	}
+	dec := json.NewDecoder(file)
+	hc := &thuder.HostConfig{}
+	err = dec.Decode(hc)
+	if err != nil {
+		return nil, err
+	}
+	//UniqueHostName does not match expected, the file could have been copied from
+	//a different system. Fix this to avoid name collision.
+	uhn, err := thuder.GenerateUniqueHostname()
+	if err != nil {
+		return nil, err
+	}
+	if hc.UniqueHostName != uhn {
+		hc.UniqueHostName = uhn
+		err = saveFile(fn, hc)
 		if err != nil {
-			return nil, err
-		}
-		if hc.UniqueHostName != uhn {
-			hc.UniqueHostName = uhn
-			err = saveFile(fn, hc)
-			if err != nil {
-				logE.Println(err)
-			}
+			logE.Println(err)
 		}
 	}
 	return hc, nil
@@ -155,22 +180,6 @@ func saveFile(fn string, v interface{}) error {
 		return err
 	}
 	return ioutil.WriteFile(fn, data, 0644)
-}
-
-//hostConfigPath uses location of executable or current working directory,
-//change this to where you want the configuration file to be.
-func hostConfigPath() string {
-	path, err := os.Executable()
-	if err == nil {
-		return filepath.Dir(path)
-	}
-
-	logE.Println("path name for the executable not supported: ", err)
-	path, err = os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-	return path
 }
 
 //groupName is set here based on os and arch, so that different pathes and
