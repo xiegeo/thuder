@@ -11,7 +11,7 @@ func TestFilter(t *testing.T) {
 	f := Filter{}
 	now := time.Now()
 	t.Run(fmt.Sprintf("Direction"), func(t *testing.T) {
-		f.Direction = "andsof"
+		f.Direction = "foobar"
 		expErr(t, f.Prepare())
 		f.Direction = "push"
 		noErr(t, f.Prepare())
