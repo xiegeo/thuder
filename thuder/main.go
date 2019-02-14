@@ -42,7 +42,7 @@ var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
 // optional build time customizations
 var filters []thuder.Filter //set this to set default host filters
-var postScript string       //set this to run after pull/push
+var postScripts []string    //set this to run after pull/push
 
 func main() {
 	flag.Parse()
@@ -154,8 +154,8 @@ func runOnce(hc *thuder.HostConfig) error {
 		logE.Println("Can not load Media Config", err)
 		return err
 	}
-	if postScript != "" {
-		defer func() {
+	for i := range postScripts {
+		defer func(postScript string) {
 			cmd := exec.Command(postScript)
 			cmd.Stdout = lw
 			cmd.Stderr = lw
@@ -163,7 +163,7 @@ func runOnce(hc *thuder.HostConfig) error {
 			if err != nil {
 				logE.Println(err)
 			}
-		}()
+		}(postScripts[i])
 	}
 	fmt.Fprintln(lw, mc)
 	err = thuder.PullAndPush(hc, mc)
