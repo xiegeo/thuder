@@ -5,15 +5,18 @@
 
 
 
-Thumb Drive Commander (thuder) is a tool that can (will) push and pull data from a headless device with no internet access. 
+Thumb Drive Commander (thuder) is a tool that can (working but with incomplete features) push and pull data from a headless device with no internet access. 
 
 ## Usage:
 
 - USB Thumb Drive (aka: sneakernet) for data transport (with FAT32 support for compatibility)
-- A service running on the Pi that waits for drive insertions (mounting can be done by USBmount) and does pre-configered actions which maybe overridden by a settings file in the thumb drive.
-- Different Pis (by hostname and hardware (cpu, micoSD) IDs) can use different sub-folders in the thumb drive.
+- As a service that waits for drive insertions (mounting can be done by USBmount) and does pre-configured actions which maybe supplemented by a settings file in the thumb drive.
+- Different hosts (by hostname and hardware (cpu, microSD) IDs) uses different sub-folders in the same removable media.
 - Preformed actions can be controlled by some authorization method that verifies the drive or its contents.
-- When actions are finished and the drive unmounted. The led on the thumb drive stops flashing. It is then safe to remove the drive.
+- After file transfer actions completes, thuder can run a list of commands, to tell relevant services to reload configurations
+- After actions are finished and the drive flashed. The led on the thumb drive stops flashing. It is then safe to remove the drive.
+
+- Alternatively thuder can be used as a library to easily filter and copy files recursively. 
 
 ## Why?
 
@@ -26,23 +29,27 @@ I need to remotely service devices with someone on location. The devices should 
 
 Security concerns if a removable media or data on such media is authorized. 
 
-Since typical thumb drives (and many host devices such as rpi) have no build in security architecture, such as a trusted computing platform, this makes any addon to authenticate a device less than perfect. This is mitigated by the requirement that any attacker must be phyically present to gain a point of entry. Preventing a worm can only be accomplished by limiting scripting capiblities of thuder or performing good hygiene when reusing thumb drives.
+Since typical thumb drives (and many host devices such as rpi) have no build in security architecture, such as a trusted computing platform, this makes any addon to authenticate a device less than perfect. This is mitigated by the requirement that any attacker must be physically present to gain a point of entry. Preventing a worm can only be accomplished by limiting scripting capabilities of thuder or performing good hygiene when reusing thumb drives.
 
 Authentication of data is also possible, but limit the environment where data can be modified.
 
-### Idempotentcy
+The sample app requires a check for a specially crafted file in the removable media to allow any operations. You must define the contents of this file for the sample app to work
 
-Repeat of the actions should be a noop. Tasks are performed simular to ansible, with a stronger emphasis on protablity and file manipulations 
+### Idempotent operation
+
+Repeats of actions are no-ops. Tasks are performed similar to ansible, with a stronger emphasis on portability and fast file manipulations.
 
 ### Many to many relationship between hosts and removable media
 
-Multiple hosts can use the same media by using unque sub directories. Mutiple media can be used on the same host, where only the current connected storge is considered the most upto date. 
+Multiple hosts can use the same media by using separate sub directories. Multiple media can be used on the same host, where only the current connected storage is considered the most up to date. 
 
-### Portablity
+### Portability
 
 #### File Permissions
 
-The target permissions after written on the host file system are provided by metadate in configeration files or by appending the octal flags in filenames for convinice.
+(TODO)
+
+The target permissions after written on the host file system are provided by meta-date in configuration files or by appending the octal flags in filenames for convenience.
 
 The default permissions are 0755 for both files and folders of the user running the service (root).
 
@@ -52,18 +59,20 @@ Pulling files does (may?) not retain permissions.
 
 #### Case Sensitivity
 
-There should not be a valid usecase for the same filename of different cases to exist. Such directory structure can not be used on Windows.
+There should not be a valid use case for the same filename of different cases to exist. Such directory structure can not be used on Windows.
 
 When pushing files to the host, all files with other cases are deleted.
 
 When deleting files, all files ignoring case are deleted.
 
-When pulling files to the removable media, repeated filesnames in other cases are renamed so they are different files to case insensitive systems. (future)
+When pulling files to the removable media, repeated file names in other cases are renamed so they are different files to case insensitive systems. (future)
 
 #### Others
 
-Other portablity issues, such as special charcters, name length, file size, or anything else that produce an error will be logged and skipped (for pull/backup) or termiate (for push/update). More work arounds can be considered in the future. 
+(TODO, only logs and continues to the next file for now)
 
-### Tasks and configeration
+Other portability issues, such as special characters, name length, file size, or anything else that produce an error will be logged and skipped (for pull/backup) or terminated (for push/update). More workarounds can be considered in the future. 
+
+### Tasks and configuration
 
 The modal that Ansible uses is an inspiration, but too complex for the current stage of development. Getting the core functionality to work comes first.
