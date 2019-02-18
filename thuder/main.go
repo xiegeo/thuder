@@ -36,7 +36,8 @@ var hostConfigName = flag.String("host_config", "", "Set the path to the read an
 	"as such is equivalent to allowing all operations listed in that device. "+
 	"Default value is empty, which disables using config file from overwriting build time settings.")
 
-var sleep = time.Second * 5 //How often to pull mediaLocation to detect new devices.
+const sleep = time.Second * 5 //How often to pull mediaLocation to detect new devices.
+const rerun = time.Hour       //How often to resync even if removable media has not changed.
 
 var logE = logLab.New(os.Stderr, "[thuder err]", logLab.LstdFlags)
 
@@ -70,9 +71,11 @@ func main() {
 		}
 		runOnce(hc)
 		fmt.Println("waiting for media to be removed")
-		for err == nil {
+		w := rerun
+		for err == nil && w > 0 {
 			time.Sleep(time.Second)
 			_, err = os.Open(hc.DefaultDirectory())
+			w -= time.Second
 		}
 		fmt.Println("removed: ", err)
 	}
